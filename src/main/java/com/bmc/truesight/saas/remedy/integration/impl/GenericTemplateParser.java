@@ -75,7 +75,7 @@ public class GenericTemplateParser implements TemplateParser {
 
         // Read the payload details and map to pojo
         try {
-            JsonNode payloadNode = rootNode.get("payload");
+            JsonNode payloadNode = rootNode.get("eventDefinition");
             String payloadString = mapper.writeValueAsString(payloadNode);
             Event event = mapper.readValue(payloadString, Event.class);
             template.setEventDefinition(event);
