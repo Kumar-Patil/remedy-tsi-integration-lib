@@ -15,7 +15,7 @@ import com.bmc.truesight.saas.remedy.integration.beans.Event;
 import com.bmc.truesight.saas.remedy.integration.beans.FieldItem;
 import com.bmc.truesight.saas.remedy.integration.beans.Template;
 import com.bmc.truesight.saas.remedy.integration.exception.ParsingException;
-import com.bmc.truesight.saas.remedy.integration.util.Constants;
+import com.bmc.truesight.saas.remedy.integration.util.Message;
 import com.bmc.truesight.saas.remedy.integration.util.StringUtil;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -46,7 +46,7 @@ public class GenericTemplateParser implements TemplateParser {
         try {
             configJson = FileUtils.readFileToString(new File(fileName), "UTF8");
         } catch (IOException e) {
-            throw new ParsingException(StringUtil.format(Constants.CONFIG_FILE_NOT_VALID, new Object[]{fileName}));
+            throw new ParsingException(StringUtil.format(Message.CONFIG_FILE_NOT_VALID, new Object[]{fileName}));
         }
         return parse(configJson);
     }
@@ -59,7 +59,7 @@ public class GenericTemplateParser implements TemplateParser {
         try {
             rootNode = mapper.readTree(configJson);
         } catch (IOException e) {
-            throw new ParsingException(StringUtil.format(Constants.CONFIG_FILE_NOT_VALID, new Object[]{}));
+            throw new ParsingException(StringUtil.format(Message.CONFIG_FILE_NOT_VALID, new Object[]{}));
         }
 
         // Read the config details and map to pojo
@@ -70,7 +70,7 @@ public class GenericTemplateParser implements TemplateParser {
             Configuration config = mapper.readValue(configString, Configuration.class);
             template.setConfig(config);
         } catch (IOException e) {
-            throw new ParsingException(StringUtil.format(Constants.CONFIG_PROPERTY_NOT_FOUND, new Object[]{}));
+            throw new ParsingException(StringUtil.format(Message.CONFIG_PROPERTY_NOT_FOUND, new Object[]{}));
         }
 
         // Read the payload details and map to pojo
@@ -80,7 +80,7 @@ public class GenericTemplateParser implements TemplateParser {
             Event event = mapper.readValue(payloadString, Event.class);
             template.setEventDefinition(event);
         } catch (IOException e) {
-            throw new ParsingException(StringUtil.format(Constants.PAYLOAD_PROPERTY_NOT_FOUND, new Object[]{}));
+            throw new ParsingException(StringUtil.format(Message.PAYLOAD_PROPERTY_NOT_FOUND, new Object[]{}));
         }
 
         // Iterate over the properties and if it starts with '@', put it to
@@ -96,7 +96,7 @@ public class GenericTemplateParser implements TemplateParser {
                     fieldItemMap.put(entry.getKey(), placeholderDefinition);
                 } catch (IOException e) {
                     throw new ParsingException(
-                            StringUtil.format(Constants.PAYLOAD_PROPERTY_NOT_FOUND, new Object[]{entry.getKey()}));
+                            StringUtil.format(Message.PAYLOAD_PROPERTY_NOT_FOUND, new Object[]{entry.getKey()}));
                 }
             }
         }

@@ -1,6 +1,6 @@
 package com.bmc.truesight.saas.remedy.integration.util;
 
-public interface Constants {
+public interface Message {
 
     String CONFIG_FILE_NOT_FOUND = "Could not read the configuration file from location({0}) or it has different encoding than UTF8";
     String CONFIG_FILE_NOT_VALID = "The configuration file ({0}) is not a valid JSON";

@@ -25,7 +25,7 @@ import com.bmc.truesight.saas.remedy.integration.adapter.RemedyEntryEventAdapter
 import com.bmc.truesight.saas.remedy.integration.beans.Event;
 import com.bmc.truesight.saas.remedy.integration.beans.Template;
 import com.bmc.truesight.saas.remedy.integration.exception.RemedyLoginFailedException;
-import com.bmc.truesight.saas.remedy.integration.util.Constants;
+import com.bmc.truesight.saas.remedy.integration.util.Message;
 import com.bmc.truesight.saas.remedy.integration.util.StringUtil;
 
 /**
@@ -56,7 +56,7 @@ public class GenericRemedyReader implements RemedyReader {
             arServerContext.login();
             log.info("Login successful to remedy server");
         } catch (ARException e1) {
-            throw new RemedyLoginFailedException(StringUtil.format(Constants.REMEDY_LOGIN_FAILED, new Object[]{e1.getMessage()}));
+            throw new RemedyLoginFailedException(StringUtil.format(Message.REMEDY_LOGIN_FAILED, new Object[]{e1.getMessage()}));
         }
         return true;
     }
