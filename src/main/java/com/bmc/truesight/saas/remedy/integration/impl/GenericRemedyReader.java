@@ -37,7 +37,9 @@ import com.bmc.truesight.saas.remedy.integration.util.StringUtil;
 public class GenericRemedyReader implements RemedyReader {
 
     private static final Logger log = LoggerFactory.getLogger(GenericRemedyReader.class);
-
+    private static final Integer STATUS_FIELD_ID = 7;
+    private static final Integer INCIDENT_STATUS_CLOSED = 5;
+    private static final Integer CHANGE_STATUS_CLOSED = 11;
     @Override
     public ARServerUser createARServerContext(String hostName, Integer port, String userName, String password) {
         ARServerUser arServerContext = new ARServerUser();
@@ -74,7 +76,7 @@ public class GenericRemedyReader implements RemedyReader {
         for (Integer i : fieldsList) {
             queryFieldsList[index++] = i;
         }
-
+        //Qualifier Created for Date condition fields, for example if closed date is in startDate & endDate 
         QualifierInfo qualInfoF = null;
         for (int fieldId : template.getConfig().getConditionFields()) {
             QualifierInfo qualInfo1 = buildFieldValueQualification(fieldId,
@@ -90,7 +92,36 @@ public class GenericRemedyReader implements RemedyReader {
             } else {
                 qualInfoF = qualInfo;
             }
-
+        }
+        
+        //Status Query list
+        List<Integer> queryStatusList  = template.getConfig().getQueryStatusList();
+        //If there is no statusQueryList Configured then create qualifier for Closed status
+        if(queryStatusList == null || queryStatusList.isEmpty()){
+        	QualifierInfo qualInfoStatus =null;
+        	if(formName ==ARServerForm.INCIDENT_FORM){
+        		qualInfoStatus = buildFieldValueQualification(STATUS_FIELD_ID,
+                        new Value(INCIDENT_STATUS_CLOSED, DataType.INTEGER), RelationalOperationInfo.AR_REL_OP_EQUAL);
+        	}else if(formName ==ARServerForm.CHANGE_FORM){
+        		qualInfoStatus = buildFieldValueQualification(STATUS_FIELD_ID,
+                        new Value(CHANGE_STATUS_CLOSED, DataType.INTEGER), RelationalOperationInfo.AR_REL_OP_EQUAL);
+        	}
+        	qualInfoF = new QualifierInfo(QualifierInfo.AR_COND_OP_AND, qualInfoF, qualInfoStatus);
+        }else{
+        	//else statusQueryList Configured, created Qualifier accordingly
+        	QualifierInfo qualInfoStatusF =null;
+        	QualifierInfo qualInfoStatus =null;
+        	for (int status : queryStatusList) {
+        		qualInfoStatus = buildFieldValueQualification(STATUS_FIELD_ID,
+                        new Value(status, DataType.INTEGER), RelationalOperationInfo.AR_REL_OP_EQUAL);
+        		 if (qualInfoStatusF != null) {
+        			 qualInfoStatusF = new QualifierInfo(QualifierInfo.AR_COND_OP_OR, qualInfoStatusF, qualInfoStatus);
+                 } else {
+                	 qualInfoStatusF = qualInfoStatus;
+                 }
+        	}
+        	qualInfoF = new QualifierInfo(QualifierInfo.AR_COND_OP_AND, qualInfoF, qualInfoStatusF);
+        	
         }
 
         List<SortInfo> sortOrder = new ArrayList<SortInfo>();
