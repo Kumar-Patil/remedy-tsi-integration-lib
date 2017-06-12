@@ -1,6 +1,6 @@
 package com.bmc.truesight.saas.remedy.integration.beans;
 
-import java.sql.Date;
+import java.util.Date;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -15,7 +15,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 public class Configuration {
 
     private String remedyHostName;
-    private int remedyPort;
+    private Integer remedyPort;
     private String remedyUserName;
     private String remedyPassword;
     private String tsiEventEndpoint = "https://api.truesight-staging.bmc.com/v1/events";
@@ -46,11 +46,11 @@ public class Configuration {
         this.remedyHostName = remedyHostName;
     }
 
-    public int getRemedyPort() {
+    public Integer getRemedyPort() {
         return remedyPort;
     }
 
-    public void setRemedyPort(int remedyPort) {
+    public void setRemedyPort(Integer remedyPort) {
         this.remedyPort = remedyPort;
     }
 
