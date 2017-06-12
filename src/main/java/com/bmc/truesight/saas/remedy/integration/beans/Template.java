@@ -12,7 +12,7 @@ import java.util.Map;
 public class Template {
 
     private Configuration config;
-    private Event eventDefinition;
+    private TSIEvent eventDefinition;
     private Map<String, FieldItem> FieldItemMap;
 
     public Configuration getConfig() {
@@ -23,11 +23,11 @@ public class Template {
         this.config = config;
     }
 
-    public Event getEventDefinition() {
+    public TSIEvent getEventDefinition() {
         return eventDefinition;
     }
 
-    public void setEventDefinition(Event eventDefinition) {
+    public void setEventDefinition(TSIEvent eventDefinition) {
         this.eventDefinition = eventDefinition;
     }
 

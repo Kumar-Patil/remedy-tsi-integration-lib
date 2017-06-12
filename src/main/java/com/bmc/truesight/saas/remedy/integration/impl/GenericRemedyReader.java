@@ -22,7 +22,7 @@ import com.bmc.arsys.api.Value;
 import com.bmc.truesight.saas.remedy.integration.ARServerForm;
 import com.bmc.truesight.saas.remedy.integration.RemedyReader;
 import com.bmc.truesight.saas.remedy.integration.adapter.RemedyEntryEventAdapter;
-import com.bmc.truesight.saas.remedy.integration.beans.Event;
+import com.bmc.truesight.saas.remedy.integration.beans.TSIEvent;
 import com.bmc.truesight.saas.remedy.integration.beans.Template;
 import com.bmc.truesight.saas.remedy.integration.exception.RemedyLoginFailedException;
 import com.bmc.truesight.saas.remedy.integration.util.Message;
@@ -40,6 +40,7 @@ public class GenericRemedyReader implements RemedyReader {
     private static final Integer STATUS_FIELD_ID = 7;
     private static final Integer INCIDENT_STATUS_CLOSED = 5;
     private static final Integer CHANGE_STATUS_CLOSED = 11;
+
     @Override
     public ARServerUser createARServerContext(String hostName, Integer port, String userName, String password) {
         ARServerUser arServerContext = new ARServerUser();
@@ -64,7 +65,7 @@ public class GenericRemedyReader implements RemedyReader {
     }
 
     @Override
-    public List<Event> readRemedyTickets(ARServerUser arServerContext, ARServerForm formName, Template template, int startFrom, int chunkSize, OutputInteger recordsCount, RemedyEntryEventAdapter adapter) {
+    public List<TSIEvent> readRemedyTickets(ARServerUser arServerContext, ARServerForm formName, Template template, int startFrom, int chunkSize, OutputInteger recordsCount, RemedyEntryEventAdapter adapter) {
         //keeping as set to avoid duplicates
         Set<Integer> fieldsList = new HashSet<>();
         template.getFieldItemMap().values().forEach(fieldItem -> {
@@ -93,35 +94,35 @@ public class GenericRemedyReader implements RemedyReader {
                 qualInfoF = qualInfo;
             }
         }
-        
+
         //Status Query list
-        List<Integer> queryStatusList  = template.getConfig().getQueryStatusList();
+        List<Integer> queryStatusList = template.getConfig().getQueryStatusList();
         //If there is no statusQueryList Configured then create qualifier for Closed status
-        if(queryStatusList == null || queryStatusList.isEmpty()){
-        	QualifierInfo qualInfoStatus =null;
-        	if(formName ==ARServerForm.INCIDENT_FORM){
-        		qualInfoStatus = buildFieldValueQualification(STATUS_FIELD_ID,
+        if (queryStatusList == null || queryStatusList.isEmpty()) {
+            QualifierInfo qualInfoStatus = null;
+            if (formName == ARServerForm.INCIDENT_FORM) {
+                qualInfoStatus = buildFieldValueQualification(STATUS_FIELD_ID,
                         new Value(INCIDENT_STATUS_CLOSED, DataType.INTEGER), RelationalOperationInfo.AR_REL_OP_EQUAL);
-        	}else if(formName ==ARServerForm.CHANGE_FORM){
-        		qualInfoStatus = buildFieldValueQualification(STATUS_FIELD_ID,
+            } else if (formName == ARServerForm.CHANGE_FORM) {
+                qualInfoStatus = buildFieldValueQualification(STATUS_FIELD_ID,
                         new Value(CHANGE_STATUS_CLOSED, DataType.INTEGER), RelationalOperationInfo.AR_REL_OP_EQUAL);
-        	}
-        	qualInfoF = new QualifierInfo(QualifierInfo.AR_COND_OP_AND, qualInfoF, qualInfoStatus);
-        }else{
-        	//else statusQueryList Configured, created Qualifier accordingly
-        	QualifierInfo qualInfoStatusF =null;
-        	QualifierInfo qualInfoStatus =null;
-        	for (int status : queryStatusList) {
-        		qualInfoStatus = buildFieldValueQualification(STATUS_FIELD_ID,
+            }
+            qualInfoF = new QualifierInfo(QualifierInfo.AR_COND_OP_AND, qualInfoF, qualInfoStatus);
+        } else {
+            //else statusQueryList Configured, created Qualifier accordingly
+            QualifierInfo qualInfoStatusF = null;
+            QualifierInfo qualInfoStatus = null;
+            for (int status : queryStatusList) {
+                qualInfoStatus = buildFieldValueQualification(STATUS_FIELD_ID,
                         new Value(status, DataType.INTEGER), RelationalOperationInfo.AR_REL_OP_EQUAL);
-        		 if (qualInfoStatusF != null) {
-        			 qualInfoStatusF = new QualifierInfo(QualifierInfo.AR_COND_OP_OR, qualInfoStatusF, qualInfoStatus);
-                 } else {
-                	 qualInfoStatusF = qualInfoStatus;
-                 }
-        	}
-        	qualInfoF = new QualifierInfo(QualifierInfo.AR_COND_OP_AND, qualInfoF, qualInfoStatusF);
-        	
+                if (qualInfoStatusF != null) {
+                    qualInfoStatusF = new QualifierInfo(QualifierInfo.AR_COND_OP_OR, qualInfoStatusF, qualInfoStatus);
+                } else {
+                    qualInfoStatusF = qualInfoStatus;
+                }
+            }
+            qualInfoF = new QualifierInfo(QualifierInfo.AR_COND_OP_AND, qualInfoF, qualInfoStatusF);
+
         }
 
         List<SortInfo> sortOrder = new ArrayList<SortInfo>();
@@ -151,7 +152,7 @@ public class GenericRemedyReader implements RemedyReader {
                 }
             }
         }
-        List<Event> payloadList = new ArrayList<Event>();
+        List<TSIEvent> payloadList = new ArrayList<TSIEvent>();
         entryList.forEach(entry -> {
             payloadList.add(adapter.convertEntryToEvent(template, entry));
         });
