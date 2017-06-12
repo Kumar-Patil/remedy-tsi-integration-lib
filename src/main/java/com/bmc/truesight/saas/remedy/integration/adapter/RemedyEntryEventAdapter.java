@@ -9,14 +9,14 @@ import org.slf4j.LoggerFactory;
 
 import com.bmc.arsys.api.Entry;
 import com.bmc.arsys.api.Value;
-import com.bmc.truesight.saas.remedy.integration.beans.Event;
 import com.bmc.truesight.saas.remedy.integration.beans.EventSource;
 import com.bmc.truesight.saas.remedy.integration.beans.FieldItem;
 import com.bmc.truesight.saas.remedy.integration.beans.Template;
+import com.bmc.truesight.saas.remedy.integration.beans.TSIEvent;
 
 /**
  * This is an adapter which converts the remedy {@link Entry} items into
- * {@link Event} (TSI Events)
+ * {@link TSIEvent} (TSI Events)
  *
  * @author vitiwari
  */
@@ -30,11 +30,11 @@ public class RemedyEntryEventAdapter {
      * @param template A {@link Template} instance which contains the field
      * mapping and event Definition
      * @param entry {@link Entry} Object representing ARServer Record
-     * @return Event {@link Event} object compatible to TSI event ingestion API
+     * @return TsiEvent {@link TSIEvent} object compatible to TSI event ingestion API
      */
-    public Event convertEntryToEvent(Template template, Entry entry) {
+    public TSIEvent convertEntryToEvent(Template template, Entry entry) {
 
-        Event event = new Event(template.getEventDefinition());
+        TSIEvent event = new TSIEvent(template.getEventDefinition());
 
         event.setTitle(getValueFromEntry(template, entry, event.getTitle()));
         List<String> fPrintFields = new ArrayList<>();

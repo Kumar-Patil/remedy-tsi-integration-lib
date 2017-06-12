@@ -6,7 +6,7 @@ import org.apache.commons.lang.StringUtils;
 
 import com.bmc.truesight.saas.remedy.integration.TemplateValidator;
 import com.bmc.truesight.saas.remedy.integration.beans.Configuration;
-import com.bmc.truesight.saas.remedy.integration.beans.Event;
+import com.bmc.truesight.saas.remedy.integration.beans.TSIEvent;
 import com.bmc.truesight.saas.remedy.integration.beans.EventSource;
 import com.bmc.truesight.saas.remedy.integration.beans.FieldItem;
 import com.bmc.truesight.saas.remedy.integration.beans.Template;
@@ -25,7 +25,7 @@ public class GenericTemplateValidator implements TemplateValidator {
     @Override
     public boolean validate(Template template) throws ValidationException {
         Configuration config = template.getConfig();
-        Event payload = template.getEventDefinition();
+        TSIEvent payload = template.getEventDefinition();
         Map<String, FieldItem> fieldItemMap = template.getFieldItemMap();
 
         if (config.getRemedyHostName().isEmpty()

@@ -6,8 +6,8 @@ import com.bmc.arsys.api.ARServerUser;
 import com.bmc.arsys.api.Entry;
 import com.bmc.arsys.api.OutputInteger;
 import com.bmc.truesight.saas.remedy.integration.adapter.RemedyEntryEventAdapter;
-import com.bmc.truesight.saas.remedy.integration.beans.Event;
 import com.bmc.truesight.saas.remedy.integration.beans.Template;
+import com.bmc.truesight.saas.remedy.integration.beans.TSIEvent;
 import com.bmc.truesight.saas.remedy.integration.exception.RemedyLoginFailedException;
 
 /**
@@ -62,11 +62,11 @@ public interface RemedyReader {
      * will hold total the no of records matching.
      * @param adapter This is an instance of {@link RemedyEntryEventAdapter},
      * Which converts the {@link Entry} object received from ARserver to
-     * {@link Event} Objects
-     * @return {@link List} It returns the list of {@link Event} (from startFrom
+     * {@link TSIEvent} Objects
+     * @return {@link List} It returns the list of {@link TSIEvent} (from startFrom
      * parameter to startFrom+chunkSize index)
      */
-    List<Event> readRemedyTickets(ARServerUser arServerContext, ARServerForm formName, Template template, int startFrom,
+    List<TSIEvent> readRemedyTickets(ARServerUser arServerContext, ARServerForm formName, Template template, int startFrom,
             int chunkSize, OutputInteger recordsCount, RemedyEntryEventAdapter adapter);
 
     /**

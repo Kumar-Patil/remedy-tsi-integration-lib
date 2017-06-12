@@ -11,7 +11,7 @@ import org.apache.commons.io.FileUtils;
 
 import com.bmc.truesight.saas.remedy.integration.TemplateParser;
 import com.bmc.truesight.saas.remedy.integration.beans.Configuration;
-import com.bmc.truesight.saas.remedy.integration.beans.Event;
+import com.bmc.truesight.saas.remedy.integration.beans.TSIEvent;
 import com.bmc.truesight.saas.remedy.integration.beans.FieldItem;
 import com.bmc.truesight.saas.remedy.integration.beans.Template;
 import com.bmc.truesight.saas.remedy.integration.exception.ParsingException;
@@ -77,7 +77,7 @@ public class GenericTemplateParser implements TemplateParser {
         try {
             JsonNode payloadNode = rootNode.get("eventDefinition");
             String payloadString = mapper.writeValueAsString(payloadNode);
-            Event event = mapper.readValue(payloadString, Event.class);
+            TSIEvent event = mapper.readValue(payloadString, TSIEvent.class);
             template.setEventDefinition(event);
         } catch (IOException e) {
             throw new ParsingException(StringUtil.format(Message.PAYLOAD_PROPERTY_NOT_FOUND, new Object[]{}));

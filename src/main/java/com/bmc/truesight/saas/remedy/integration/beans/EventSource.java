@@ -1,7 +1,7 @@
 package com.bmc.truesight.saas.remedy.integration.beans;
 
 /**
- * This is a pojo class, which is used in the {@link Event}
+ * This is a pojo class, which is used in the {@link TSIEvent}
  *
  * @author vitiwari
  *

@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class Event {
+public class TSIEvent {
 
     private String title;
     private List<String> fingerprintFields;
@@ -17,7 +17,7 @@ public class Event {
     private EventSource source;
     private EventSource sender;
 
-    public Event(Event payload) {
+    public TSIEvent(TSIEvent payload) {
         this.setTitle(payload.getTitle());
         this.setFingerprintFields(new ArrayList<String>(payload.fingerprintFields));
         this.setCreatedAt(payload.getCreatedAt());
@@ -29,7 +29,7 @@ public class Event {
         this.setStatus(payload.getStatus());
     }
 
-    public Event() {
+    public TSIEvent() {
         // Default Constructor
     }
 
