@@ -20,15 +20,15 @@ public class Configuration {
     private String remedyPassword;
     private String tsiEventEndpoint = "https://api.truesight-staging.bmc.com/v1/events";
     private String tsiApiToken;
-    private int chunkSize;
+    private Integer chunkSize;
     private List<Integer> conditionFields;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm a z")
     private Date startDateTime;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm a z")
     private Date endDateTime;
     private List<Integer> queryStatusList;
-    private int retryConfig;
-    private int waitMsBeforeRetry;
+    private Integer retryConfig;
+    private Integer waitMsBeforeRetry;
 
     public Date getEndDateTime() {
         return endDateTime;
@@ -78,11 +78,11 @@ public class Configuration {
         this.tsiApiToken = tsiApiToken;
     }
 
-    public int getChunkSize() {
+    public Integer getChunkSize() {
         return chunkSize;
     }
 
-    public void setChunkSize(int chunkSize) {
+    public void setChunkSize(Integer chunkSize) {
         this.chunkSize = chunkSize;
     }
 
@@ -94,11 +94,11 @@ public class Configuration {
         this.startDateTime = startDateTime;
     }
 
-    public int getRetryConfig() {
+    public Integer getRetryConfig() {
         return retryConfig;
     }
 
-    public void setRetryConfig(int retryConfig) {
+    public void setRetryConfig(Integer retryConfig) {
         this.retryConfig = retryConfig;
     }
 
@@ -118,11 +118,11 @@ public class Configuration {
         this.tsiEventEndpoint = tsiEventEndpoint;
     }
 
-    public int getWaitMsBeforeRetry() {
+    public Integer getWaitMsBeforeRetry() {
         return waitMsBeforeRetry;
     }
 
-    public void setWaitMsBeforeRetry(int waitMsBeforeRetry) {
+    public void setWaitMsBeforeRetry(Integer waitMsBeforeRetry) {
         this.waitMsBeforeRetry = waitMsBeforeRetry;
     }
 

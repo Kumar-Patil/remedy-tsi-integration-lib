@@ -21,7 +21,7 @@ public interface TemplateParser {
      * @throws ParsingException Throws this exception if JSON parsing is not
      * successful
      */
-    Template readParseConfigJson(String configJson) throws ParsingException;
+    Template readParseConfigJson(Template defaultTemplate,String configJson) throws ParsingException;
 
     /**
      * This method reads and parse from a JSON file. This function is used in
@@ -32,5 +32,5 @@ public interface TemplateParser {
      * @throws ParsingException Throws this exception if JSON parsing is not
      * successful
      */
-    Template readParseConfigFile(String fileName) throws ParsingException;
+    Template readParseConfigFile(Template defaultTemplate,String fileName) throws ParsingException;
 }
