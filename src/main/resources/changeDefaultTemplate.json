@@ -1,16 +1,16 @@
 {
 	"config": {
-		"remedyHostName":"",
+		"remedyHostName":"<Input ARServer Host Name>",
    		"remedyPort":"",
-   		"remedyUserName":"",
-   		"remedyPassword":"",
-  		"tsiEventEndpoint" : "https://api.truesight-staging.bmc.com/v1/events",
-  		"tsiApiToken":"",
+   		"remedyUserName":"<Input ARServer UserName>",
+   		"remedyPassword":"<Input password>",
+  		"tsiEventEndpoint" : "https://api.truesight.bmc.com/v1/events",
+  		"tsiApiToken":"<Input TSI Api Token>",
   		"chunkSize":1000,
   		"conditionFields":[303915500,3],
   		"queryStatusList":[0,11],
-  		"startDateTime":"2008-01-01 00:00 AM GMT+1:00",
-  		"endDateTime":"2017-05-29 00:00 AM GMT+1:00",
+  		"startDateTime":"<Input Start Date time>",
+  		"endDateTime":"<Input End Datetime>",
   		"retryConfig":3,
   		"waitMsBeforeRetry":5000
 	},

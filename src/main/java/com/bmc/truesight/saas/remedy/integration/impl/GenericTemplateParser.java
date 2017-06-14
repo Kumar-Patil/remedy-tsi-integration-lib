@@ -16,7 +16,7 @@ import com.bmc.truesight.saas.remedy.integration.beans.FieldItem;
 import com.bmc.truesight.saas.remedy.integration.beans.TSIEvent;
 import com.bmc.truesight.saas.remedy.integration.beans.Template;
 import com.bmc.truesight.saas.remedy.integration.exception.ParsingException;
-import com.bmc.truesight.saas.remedy.integration.util.Message;
+import com.bmc.truesight.saas.remedy.integration.util.Constants;
 import com.bmc.truesight.saas.remedy.integration.util.StringUtil;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -49,7 +49,7 @@ public class GenericTemplateParser implements TemplateParser {
         try {
             configJson = FileUtils.readFileToString(new File(fileName), "UTF8");
         } catch (IOException e) {
-            throw new ParsingException(StringUtil.format(Message.CONFIG_FILE_NOT_VALID, new Object[]{fileName}));
+            throw new ParsingException(StringUtil.format(Constants.CONFIG_FILE_NOT_VALID, new Object[]{fileName}));
         }
         return parse(defaultTemplate, configJson);
     }
@@ -62,7 +62,7 @@ public class GenericTemplateParser implements TemplateParser {
         try {
             rootNode = mapper.readTree(configJson);
         } catch (IOException e) {
-            throw new ParsingException(StringUtil.format(Message.CONFIG_FILE_NOT_VALID, new Object[]{configJson, e.getMessage()}));
+            throw new ParsingException(StringUtil.format(Constants.CONFIG_FILE_NOT_VALID, new Object[]{configJson, e.getMessage()}));
         }
 
         // Read the config details and map to pojo
@@ -74,7 +74,7 @@ public class GenericTemplateParser implements TemplateParser {
                 configString = mapper.writeValueAsString(configuration);
                 config = mapper.readValue(configString, Configuration.class);
             } catch (IOException e) {
-                throw new ParsingException(StringUtil.format(Message.CONFIG_PROPERTY_NOT_VALID, new Object[]{e.getMessage()}));
+                throw new ParsingException(StringUtil.format(Constants.CONFIG_PROPERTY_NOT_VALID, new Object[]{e.getMessage()}));
             }
             Configuration defaultConfig = defaultTemplate.getConfig();
             updateConfig(defaultConfig, config);
@@ -91,7 +91,7 @@ public class GenericTemplateParser implements TemplateParser {
                 String payloadString = mapper.writeValueAsString(payloadNode);
                 event = mapper.readValue(payloadString, TSIEvent.class);
             } catch (IOException e) {
-                throw new ParsingException(StringUtil.format(Message.PAYLOAD_PROPERTY_NOT_FOUND, new Object[]{e.getMessage()}));
+                throw new ParsingException(StringUtil.format(Constants.PAYLOAD_PROPERTY_NOT_FOUND, new Object[]{e.getMessage()}));
             }
             TSIEvent defaultEvent = defaultTemplate.getEventDefinition();
             updateEventDefinition(defaultEvent, event);
@@ -113,7 +113,7 @@ public class GenericTemplateParser implements TemplateParser {
                     fieldItemMap.put(entry.getKey(), placeholderDefinition);
                 } catch (IOException e) {
                     throw new ParsingException(
-                            StringUtil.format(Message.PLACEHOLDER_PROPERTY_NOT_CORRECT, new Object[]{entry.getKey()}));
+                            StringUtil.format(Constants.PLACEHOLDER_PROPERTY_NOT_CORRECT, new Object[]{entry.getKey()}));
                 }
             }
         }
@@ -133,6 +133,12 @@ public class GenericTemplateParser implements TemplateParser {
         }
         if (config.getRemedyUserName() != null && !config.getRemedyUserName().equals("")) {
             defaultConfig.setRemedyUserName(config.getRemedyUserName());
+        }
+        if (config.getTsiEventEndpoint() != null && !config.getTsiEventEndpoint().equals("")) {
+            defaultConfig.setTsiEventEndpoint(config.getTsiEventEndpoint());
+        }
+        if (config.getTsiApiToken()!= null && !config.getTsiApiToken().equals("")) {
+            defaultConfig.setTsiApiToken(config.getTsiApiToken());
         }
         if (config.getStartDateTime() != null) {
             defaultConfig.setStartDateTime(config.getStartDateTime());

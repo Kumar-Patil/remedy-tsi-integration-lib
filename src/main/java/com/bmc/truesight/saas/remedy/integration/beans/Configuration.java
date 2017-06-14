@@ -18,7 +18,7 @@ public class Configuration {
     private Integer remedyPort;
     private String remedyUserName;
     private String remedyPassword;
-    private String tsiEventEndpoint = "https://api.truesight-staging.bmc.com/v1/events";
+    private String tsiEventEndpoint;
     private String tsiApiToken;
     private Integer chunkSize;
     private List<Integer> conditionFields;
