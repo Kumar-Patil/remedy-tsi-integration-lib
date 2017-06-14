@@ -30,7 +30,8 @@ public class RemedyEntryEventAdapter {
      * @param template A {@link Template} instance which contains the field
      * mapping and event Definition
      * @param entry {@link Entry} Object representing ARServer Record
-     * @return TsiEvent {@link TSIEvent} object compatible to TSI event ingestion API
+     * @return TsiEvent {@link TSIEvent} object compatible to TSI event
+     * ingestion API
      */
     public TSIEvent convertEntryToEvent(Template template, Entry entry) {
 

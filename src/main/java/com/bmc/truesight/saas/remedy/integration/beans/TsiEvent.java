@@ -11,6 +11,7 @@ public class TSIEvent {
     private List<String> fingerprintFields;
     private String severity;
     private String status;
+    private String message;
     private Map<String, String> properties;
     private String createdAt;
     private String eventClass;
@@ -104,4 +105,12 @@ public class TSIEvent {
     public void setProperties(Map<String, String> properties) {
         this.properties = properties;
     }
+
+	public String getMessage() {
+		return message;
+	}
+
+	public void setMessage(String message) {
+		this.message = message;
+	}
 }
