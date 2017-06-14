@@ -188,11 +188,10 @@ public class GenericTemplateParser implements TemplateParser {
         }
         if (event.getProperties() != null && event.getProperties().size() > 0) {
             Map<String, String> defPropertyMap = defaultEvent.getProperties();
-            Map<String, String> propertyMap = defaultEvent.getProperties();
+            Map<String, String> propertyMap = event.getProperties();
             event.getProperties().keySet().forEach(key -> {
                 defPropertyMap.put(key, propertyMap.get(key));
             });
-            //defaultEvent.setProperties(event.getProperties());
         }
         if (event.getSource() != null && event.getSource().equals("")) {
             defaultEvent.setSource(event.getSource());
