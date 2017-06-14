@@ -1,13 +1,13 @@
 package com.bmc.truesight.saas.remedy.integration.impl;
 
-import java.io.File;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
-
-import org.apache.commons.io.FileUtils;
 
 import com.bmc.truesight.saas.remedy.integration.ARServerForm;
 import com.bmc.truesight.saas.remedy.integration.TemplatePreParser;
@@ -95,10 +95,15 @@ public class GenericTemplatePreParser implements TemplatePreParser {
     }
 
     private String getFile(String fileName) throws IOException {
-        //Get file from resources folder
-        ClassLoader classLoader = getClass().getClassLoader();
-        File file = new File(classLoader.getResource(fileName).getFile());
-        return FileUtils.readFileToString(file, "UTF8");
+		//Get file from resources folder
+        InputStream inputStream = ClassLoader.getSystemResourceAsStream(fileName);
+        InputStreamReader streamReader = new InputStreamReader(inputStream, "UTF-8");
+        BufferedReader in = new BufferedReader(streamReader);
+        StringBuffer text= new StringBuffer("");
+        for (String line; (line = in.readLine()) != null;) {
+        	text = text.append(line);
+        }
+        return text.toString();
     }
-
+    
 }
