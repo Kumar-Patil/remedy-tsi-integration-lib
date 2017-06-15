@@ -3,7 +3,7 @@
 		"remedyHostName":"<Input ARServer Host Name>",
    		"remedyPort":"",
    		"remedyUserName":"<Input ARServer UserName>",
-   		"remedyPassword":"<Input password>",
+   		"remedyPassword":"",
   		"tsiEventEndpoint" : "https://api.truesight.bmc.com/v1/events",
   		"tsiApiToken":"<Input TSI Api Token>",
   		"chunkSize":1000,
@@ -16,7 +16,7 @@
 	},
 	"eventDefinition": {
 		"title": "@TITLE",
-		"fingerprintFields": ["ChangeID","CreatedAt"],
+		"fingerprintFields": ["ChangeID","createdAt"],
 		"severity": "@SEVERITY",
 		"status": "@STATUS",
 		"properties": {
@@ -25,7 +25,6 @@
 			"CI": "@CI",
 			"Priority": "@PRIORITY",
 			"PriorityWeight": "@WEIGHT",
-			"CreatedAt": "@CREATED_AT",
 			"app_id": "Remedy TSI Integration"
 		},
 		"createdAt": "@CREATED_AT",
