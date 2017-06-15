@@ -3,7 +3,7 @@
 		"remedyHostName":"<Input ARServer Host Name>",
    		"remedyPort":"",
    		"remedyUserName":"<Input ARServer UserName>",
-   		"remedyPassword":"<Input password>",
+   		"remedyPassword":"",
   		"tsiEventEndpoint" : "https://api.truesight.bmc.com/v1/events",
   		"tsiApiToken":"<Input TSI Api Token>",
   		"chunkSize":1000,
