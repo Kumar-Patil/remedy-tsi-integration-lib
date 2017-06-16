@@ -30,7 +30,6 @@ public class GenericTemplateValidator implements TemplateValidator {
 
         if (config.getRemedyHostName().isEmpty()
                 || config.getRemedyUserName().isEmpty()
-                || config.getRemedyPassword().isEmpty()
                 || config.getTsiEventEndpoint().isEmpty()
                 || config.getTsiApiToken().isEmpty()
                 || (config.getConditionFields().size() == 0)
