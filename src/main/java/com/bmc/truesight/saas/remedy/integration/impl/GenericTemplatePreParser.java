@@ -34,7 +34,7 @@ import com.fasterxml.jackson.databind.ObjectReader;
 public class GenericTemplatePreParser implements TemplatePreParser {
 
     private static final String INCIDENT_CONFIG_FILE = "incidentDefaultTemplate.json";
-    private static final String CHANGE_CONFIG_FILE = "incidentDefaultTemplate.json";
+    private static final String CHANGE_CONFIG_FILE = "changeDefaultTemplate.json";
     
     @Override
     public Template loadDefaults(ARServerForm form) throws ParsingException {
