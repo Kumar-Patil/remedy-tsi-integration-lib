@@ -63,11 +63,20 @@ public interface RemedyReader {
      * @param adapter This is an instance of {@link RemedyEntryEventAdapter},
      * Which converts the {@link Entry} object received from ARserver to
      * {@link TSIEvent} Objects
-     * @return {@link List} It returns the list of {@link TSIEvent} (from startFrom
-     * parameter to startFrom+chunkSize index)
+     * @return {@link List} It returns the list of {@link TSIEvent} (from
+     * startFrom parameter to startFrom+chunkSize index)
      */
     List<TSIEvent> readRemedyTickets(ARServerUser arServerContext, ARServerForm formName, Template template, int startFrom,
             int chunkSize, OutputInteger recordsCount, RemedyEntryEventAdapter adapter);
+
+    /**
+     * This method returns a boolean value suggesting if the messages contained
+     * any warning about exceeding max record request limit.
+     *
+     * @param arServerContext
+     * @return true/false
+     */
+    public boolean exceededMaxServerEntries(ARServerUser arServerContext);
 
     /**
      * This method logout the {@link ARServerUser} from the ARServer. Make sure
