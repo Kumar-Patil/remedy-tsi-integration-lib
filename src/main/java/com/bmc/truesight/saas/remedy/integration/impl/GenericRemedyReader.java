@@ -8,6 +8,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.bmc.arsys.api.ARErrors;
 import com.bmc.arsys.api.ARException;
 import com.bmc.arsys.api.ARServerUser;
 import com.bmc.arsys.api.ArithmeticOrRelationalOperand;
@@ -17,6 +18,7 @@ import com.bmc.arsys.api.OutputInteger;
 import com.bmc.arsys.api.QualifierInfo;
 import com.bmc.arsys.api.RelationalOperationInfo;
 import com.bmc.arsys.api.SortInfo;
+import com.bmc.arsys.api.StatusInfo;
 import com.bmc.arsys.api.Timestamp;
 import com.bmc.arsys.api.Value;
 import com.bmc.truesight.saas.remedy.integration.ARServerForm;
@@ -158,6 +160,26 @@ public class GenericRemedyReader implements RemedyReader {
         });
 
         return payloadList;
+    }
+
+    @Override
+    public boolean exceededMaxServerEntries(ARServerUser arServerContext) {
+        boolean returnVal = false;
+        List<StatusInfo> messages = arServerContext.getLastStatus();
+        if (messages != null && messages.size() > 0) {
+            List<StatusInfo> updatedMessages = new ArrayList<StatusInfo>(messages.size());
+            for (StatusInfo message : messages) {
+                if (message.getMessageNum() == ARErrors.AR_WARN_MAX_ENTRIES_SERVER) {
+                    returnVal = true;
+                    // not breaking here to handle the case of having more than one message with
+                 } else {
+                    // Adding all the warnings other than AR_WARN_MAX_ENTRIES_SERVER to the server context so that this warning wont be ignored in the further iterations.
+                    updatedMessages.add(message);
+                }
+            }
+            arServerContext.setLastStatus(updatedMessages);
+        }
+        return returnVal;
     }
 
     /**
