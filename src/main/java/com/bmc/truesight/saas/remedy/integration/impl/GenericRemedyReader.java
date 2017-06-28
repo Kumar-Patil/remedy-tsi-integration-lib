@@ -172,10 +172,8 @@ public class GenericRemedyReader implements RemedyReader {
                 if (message.getMessageNum() == ARErrors.AR_WARN_MAX_ENTRIES_SERVER) {
                     returnVal = true;
                     // not breaking here to handle the case of having more than one message with
-                    // AR_WARN_MAX_ENTRIES_SERVER warning. Although there is no main stream use case
-                    // but there is no much overhead of looping as well
-                } else {
-                    // Want to remove messages having warning AR_WARN_MAX_ENTRIES_SERVER from list
+                 } else {
+                    // add messages other than warning AR_WARN_MAX_ENTRIES_SERVER from list
                     updatedMessages.add(message);
                 }
             }
