@@ -173,7 +173,7 @@ public class GenericRemedyReader implements RemedyReader {
                     returnVal = true;
                     // not breaking here to handle the case of having more than one message with
                  } else {
-                    // add messages other than warning AR_WARN_MAX_ENTRIES_SERVER from list
+                    // Adding all the warnings other than AR_WARN_MAX_ENTRIES_SERVER to the server context so that this warning wont be ignored in the further iterations.
                     updatedMessages.add(message);
                 }
             }
