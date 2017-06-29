@@ -146,9 +146,10 @@ public class GenericTemplateParser implements TemplateParser {
         if (config.getEndDateTime() != null) {
             defaultConfig.setEndDateTime(config.getEndDateTime());
         }
-        if (config.getChunkSize() != null) {
+        //Disabled ability to override from the user 
+       /* if (config.getChunkSize() != null) {
             defaultConfig.setChunkSize(config.getChunkSize());
-        }
+        }*/
         if (config.getRetryConfig() != null) {
             defaultConfig.setRetryConfig(config.getRetryConfig());
         }
