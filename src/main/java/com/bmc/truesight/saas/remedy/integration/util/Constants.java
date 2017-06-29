@@ -15,6 +15,7 @@ public interface Constants {
     String CONFIG_WAITSMS_NODE_NAME="waitMsBeforeRetry";
     String EVENTDEF_NODE_NAME = "eventDefinition";
     String PLACEHOLDER_START_TOKEN = "@";
+    Integer CONFIG_CHUNK_SIZE = 1000;
     
     
     //Messages

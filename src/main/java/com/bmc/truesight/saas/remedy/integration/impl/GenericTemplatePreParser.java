@@ -86,9 +86,8 @@ public class GenericTemplatePreParser implements TemplatePreParser {
             	if(tsiKeyNode!=null)
             	config.setTsiApiToken(tsiKeyNode.asText());
             	
-            	JsonNode chunkNode = configuration.get(Constants.CONFIG_CHUNKSIZE_NODE_NAME);
-            	if(chunkNode!=null)
-            	config.setChunkSize(Integer.valueOf(chunkNode.asInt()));
+            	//Setting Config chunk size as constant
+            	config.setChunkSize(Constants.CONFIG_CHUNK_SIZE);
             	
             	ObjectReader obReader =  mapper.reader(new TypeReference<List<Integer>>() {});
             	JsonNode condFields = configuration.get(Constants.CONFIG_CONDFIELDS_NODE_NAME);
