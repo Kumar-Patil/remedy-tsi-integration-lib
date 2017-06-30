@@ -45,7 +45,12 @@ public class RemedyEntryEventAdapter {
         event.setFingerprintFields(fPrintFields);
         Map<String, String> properties = event.getProperties();
         for (String key : properties.keySet()) {
-            properties.put(key, getValueFromEntry(template, entry, properties.get(key)));
+            String val = getValueFromEntry(template, entry, properties.get(key));
+            if (isItRemedyDate(val)) {
+                properties.put(key, resolveDate(getValueFromEntry(template, entry, properties.get(key))));
+            } else {
+                properties.put(key, getValueFromEntry(template, entry, properties.get(key)));
+            }
         }
         event.setSeverity(getValueFromEntry(template, entry, event.getSeverity()));
         event.setStatus(getValueFromEntry(template, entry, event.getStatus()));
@@ -97,5 +102,22 @@ public class RemedyEntryEventAdapter {
             return "";
         }
         return longDate.toString();
+    }
+
+    private boolean isItRemedyDate(String val) {
+        boolean case1 = val.length() >= 22;
+        if (case1) {
+            boolean case2 = val.startsWith("[") && val.endsWith("]");
+            boolean case3 = val.substring(1, 10).equalsIgnoreCase("Timestamp");
+            boolean case4 = false;
+            try {
+                Long.parseLong(val.substring(11, 21));
+                case4 = true;
+            } catch (NumberFormatException nfe) {
+                case4 = false;
+            }
+            return case1 && case2 && case3 && case4;
+        }
+        return case1;
     }
 }

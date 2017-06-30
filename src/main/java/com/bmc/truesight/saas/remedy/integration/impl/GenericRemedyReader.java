@@ -27,6 +27,7 @@ import com.bmc.truesight.saas.remedy.integration.adapter.RemedyEntryEventAdapter
 import com.bmc.truesight.saas.remedy.integration.beans.TSIEvent;
 import com.bmc.truesight.saas.remedy.integration.beans.Template;
 import com.bmc.truesight.saas.remedy.integration.exception.RemedyLoginFailedException;
+import com.bmc.truesight.saas.remedy.integration.exception.RemedyReadFailedException;
 import com.bmc.truesight.saas.remedy.integration.util.Constants;
 import com.bmc.truesight.saas.remedy.integration.util.StringUtil;
 
@@ -67,7 +68,7 @@ public class GenericRemedyReader implements RemedyReader {
     }
 
     @Override
-    public List<TSIEvent> readRemedyTickets(ARServerUser arServerContext, ARServerForm formName, Template template, int startFrom, int chunkSize, OutputInteger recordsCount, RemedyEntryEventAdapter adapter) {
+    public List<TSIEvent> readRemedyTickets(ARServerUser arServerContext, ARServerForm formName, Template template, int startFrom, int chunkSize, OutputInteger recordsCount, RemedyEntryEventAdapter adapter) throws RemedyReadFailedException {
         //keeping as set to avoid duplicates
         Set<Integer> fieldsList = new HashSet<>();
         template.getFieldItemMap().values().forEach(fieldItem -> {
@@ -150,7 +151,8 @@ public class GenericRemedyReader implements RemedyReader {
                     continue;
                 } else {
                     log.error("Skipping the read process, Reading tickets Failed for starting : {}, chunk size {} even after retrying for {} times", new Object[]{startFrom, chunkSize, retryCount});
-                    break;
+                    throw new RemedyReadFailedException("Skipping the read process, Reading tickets Failed for starting : "+startFrom+", chunk size "+chunkSize+" even after retrying for "+retryCount+" times");
+                    
                 }
             }
         }
