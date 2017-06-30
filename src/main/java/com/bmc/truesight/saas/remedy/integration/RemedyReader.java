@@ -9,6 +9,7 @@ import com.bmc.truesight.saas.remedy.integration.adapter.RemedyEntryEventAdapter
 import com.bmc.truesight.saas.remedy.integration.beans.Template;
 import com.bmc.truesight.saas.remedy.integration.beans.TSIEvent;
 import com.bmc.truesight.saas.remedy.integration.exception.RemedyLoginFailedException;
+import com.bmc.truesight.saas.remedy.integration.exception.RemedyReadFailedException;
 
 /**
  * This interface defines the methods required for reading Remedy Entries as TSI
@@ -65,9 +66,10 @@ public interface RemedyReader {
      * {@link TSIEvent} Objects
      * @return {@link List} It returns the list of {@link TSIEvent} (from
      * startFrom parameter to startFrom+chunkSize index)
+     * @throws RemedyReadFailedException 
      */
     List<TSIEvent> readRemedyTickets(ARServerUser arServerContext, ARServerForm formName, Template template, int startFrom,
-            int chunkSize, OutputInteger recordsCount, RemedyEntryEventAdapter adapter);
+            int chunkSize, OutputInteger recordsCount, RemedyEntryEventAdapter adapter) throws RemedyReadFailedException;
 
     /**
      * This method returns a boolean value suggesting if the messages contained

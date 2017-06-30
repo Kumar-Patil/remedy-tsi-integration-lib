@@ -22,9 +22,9 @@ public class Configuration {
     private String tsiApiToken;
     private Integer chunkSize;
     private List<Integer> conditionFields;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm a z")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss z")
     private Date startDateTime;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm a z")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss z")
     private Date endDateTime;
     private List<Integer> queryStatusList;
     private Integer retryConfig;
