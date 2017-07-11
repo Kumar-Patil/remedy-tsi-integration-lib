@@ -58,7 +58,7 @@ public class GenericTemplateValidator implements TemplateValidator {
         // validate payload configuration
         Map<String, String> properties = payload.getProperties();
         for (String key : properties.keySet()) {
-        	if(key.trim().contains(" ")){
+        	if(!StringUtil.isValidJavaIdentifier(key)){
         		throw new ValidationException(StringUtil.format(Constants.PROPERTY_NAME_CONTAINS_SPACE, new Object[]{key.trim()}));
         	}
             if (properties.get(key).startsWith("@") && !fieldItemMap.containsKey(properties.get(key))) {
