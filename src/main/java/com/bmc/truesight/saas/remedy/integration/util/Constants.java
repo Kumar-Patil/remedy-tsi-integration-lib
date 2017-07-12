@@ -29,6 +29,6 @@ public interface Constants {
     String PAYLOAD_PLACEHOLDER_DEFINITION_MISSING = "The definition for payload placeholder {0} is missing in the configuration file";
     String REMEDY_LOGIN_FAILED = "Login failed to Remedy Server, ({0})";
     String FACTORY_INITIALIZATION_EXCEPTION = "Failed to create proper instance in the factory, Please ensure you are using right parameters";
-	String PROPERTY_NAME_CONTAINS_SPACE = "The property \"{0}\" is not a valid Field Name, Only AlphaNumeric and Underscore are allowed characters in the Field Names.";
+	String PROPERTY_NAME_INVALID = "The property \"{0}\" is not a valid Field Name, Only AlphaNumeric and Underscore are allowed characters in the Field Names.";
 
 }
