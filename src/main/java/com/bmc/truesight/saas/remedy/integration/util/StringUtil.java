@@ -21,11 +21,11 @@ public class StringUtil {
             return false;
         }
         char[] c = s.toCharArray();
-        if (!Character.isJavaIdentifierStart(c[0])) {
+        if (!Character.isJavaIdentifierStart(c[0]) || (c[0] == '$')) {
             return false;
         }
         for (int i = 1; i < c.length; i++) {
-            if (!Character.isJavaIdentifierPart(c[i])) {
+            if (!Character.isJavaIdentifierPart(c[i]) || (c[i] == '$')) {
                 return false;
             }
         }
