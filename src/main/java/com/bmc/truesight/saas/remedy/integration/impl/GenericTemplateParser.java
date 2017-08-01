@@ -49,6 +49,7 @@ public class GenericTemplateParser implements TemplateParser {
         try {
             configJson = FileUtils.readFileToString(new File(fileName), "UTF8");
         } catch (IOException e) {
+            log.debug("Template file {} not available, name should be incidentTemplate.json/changeTemplate.json & its location should be same as jar file", fileName);
             throw new ParsingException(StringUtil.format(Constants.CONFIG_FILE_NOT_VALID, new Object[]{fileName}));
         }
         return parse(defaultTemplate, configJson);
@@ -137,7 +138,7 @@ public class GenericTemplateParser implements TemplateParser {
         if (config.getTsiEventEndpoint() != null && !config.getTsiEventEndpoint().equals("")) {
             defaultConfig.setTsiEventEndpoint(config.getTsiEventEndpoint());
         }
-        if (config.getTsiApiToken()!= null && !config.getTsiApiToken().equals("")) {
+        if (config.getTsiApiToken() != null && !config.getTsiApiToken().equals("")) {
             defaultConfig.setTsiApiToken(config.getTsiApiToken());
         }
         if (config.getStartDateTime() != null) {
@@ -147,7 +148,7 @@ public class GenericTemplateParser implements TemplateParser {
             defaultConfig.setEndDateTime(config.getEndDateTime());
         }
         //Disabled ability to override from the user 
-       /* if (config.getChunkSize() != null) {
+        /* if (config.getChunkSize() != null) {
             defaultConfig.setChunkSize(config.getChunkSize());
         }*/
         if (config.getRetryConfig() != null) {

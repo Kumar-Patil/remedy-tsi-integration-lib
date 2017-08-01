@@ -57,10 +57,14 @@ public class GenericTemplateValidator implements TemplateValidator {
 
         // validate payload configuration
         Map<String, String> properties = payload.getProperties();
+        if (properties.keySet().size() > Constants.MAX_PROPERTY_FIELD_SUPPORTED) {
+            throw new ValidationException(StringUtil.format(Constants.PROPERTY_FIELD_COUNT_EXCEEDS, new Object[]{properties.keySet().size(), Constants.MAX_PROPERTY_FIELD_SUPPORTED}));
+        }
+
         for (String key : properties.keySet()) {
-        	if(!StringUtil.isValidJavaIdentifier(key)){
-        		throw new ValidationException(StringUtil.format(Constants.PROPERTY_NAME_INVALID, new Object[]{key.trim()}));
-        	}
+            if (!StringUtil.isValidJavaIdentifier(key)) {
+                throw new ValidationException(StringUtil.format(Constants.PROPERTY_NAME_INVALID, new Object[]{key.trim()}));
+            }
             if (properties.get(key).startsWith("@") && !fieldItemMap.containsKey(properties.get(key))) {
                 throw new ValidationException(StringUtil.format(Constants.PAYLOAD_PLACEHOLDER_DEFINITION_MISSING, new Object[]{properties.get(key)}));
             }
