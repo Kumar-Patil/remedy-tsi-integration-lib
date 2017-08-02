@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.bmc.truesight.saas</groupId>
     <artifactId>remedy-tsi-integration-lib</artifactId>
-    <version>0.1.1</version>
+    <version>0.1.2</version>
     <name>remedy-tsi-integration-lib</name>
     <description>Library for integration of Remedy Incidents and Change tickets into Truesight Intelligence as Events</description>
 
@@ -13,25 +13,26 @@
             <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
         </license>
     </licenses>
-    
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<junit.version>4.12</junit.version>
-		<slf4j.version>1.7.25</slf4j.version>
-		<arsys.version>8.0</arsys.version>
-		<commons.lang.version>2.6</commons.lang.version>
-		<commons.codec.version>1.6</commons.codec.version>
-		<jackson.core.version>2.2.3</jackson.core.version>
-		<commons.io.version>2.5</commons.io.version>
-		<java.source.version>1.8</java.source.version>
-		<java.target.version>1.8</java.target.version>
-		<maven.sourceplugin.version>2.4</maven.sourceplugin.version>
-		<maven.compilerplugin.version>3.5</maven.compilerplugin.version>
-		<maven.enforcerplugin.version>1.4.1</maven.enforcerplugin.version>
-		<maven.javadocplugin.version>2.10.4</maven.javadocplugin.version>
-		<maven.gpgplugin.version>1.6</maven.gpgplugin.version>
-	</properties>
-	
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <junit.version>4.12</junit.version>
+        <slf4j.version>1.7.25</slf4j.version>
+        <arsys.version>8.0</arsys.version>
+        <commons.lang.version>2.6</commons.lang.version>
+        <commons.codec.version>1.9</commons.codec.version>
+        <jackson.core.version>2.2.3</jackson.core.version>
+        <commons.io.version>2.5</commons.io.version>
+        <java.source.version>1.8</java.source.version>
+        <java.target.version>1.8</java.target.version>
+        <maven.sourceplugin.version>2.4</maven.sourceplugin.version>
+        <maven.compilerplugin.version>3.5</maven.compilerplugin.version>
+        <maven.enforcerplugin.version>1.4.1</maven.enforcerplugin.version>
+        <maven.javadocplugin.version>2.10.4</maven.javadocplugin.version>
+        <maven.gpgplugin.version>1.6</maven.gpgplugin.version>
+        <httpclient.version>4.5.2</httpclient.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>junit</groupId>
@@ -58,7 +59,7 @@
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
             <version>${commons.codec.version}</version>
-       	</dependency>
+        </dependency>
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
@@ -70,7 +71,17 @@
             <artifactId>jackson-databind</artifactId>
             <version>${jackson.core.version}</version>
         </dependency>
-
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>${httpclient.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
     </dependencies>
     <build>
         <plugins>

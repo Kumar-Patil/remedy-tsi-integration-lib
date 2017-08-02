@@ -24,6 +24,7 @@ import com.bmc.arsys.api.Value;
 import com.bmc.truesight.saas.remedy.integration.ARServerForm;
 import com.bmc.truesight.saas.remedy.integration.RemedyReader;
 import com.bmc.truesight.saas.remedy.integration.adapter.RemedyEntryEventAdapter;
+import com.bmc.truesight.saas.remedy.integration.beans.RemedyEventResponse;
 import com.bmc.truesight.saas.remedy.integration.beans.TSIEvent;
 import com.bmc.truesight.saas.remedy.integration.beans.Template;
 import com.bmc.truesight.saas.remedy.integration.exception.RemedyLoginFailedException;
@@ -68,7 +69,8 @@ public class GenericRemedyReader implements RemedyReader {
     }
 
     @Override
-    public List<TSIEvent> readRemedyTickets(ARServerUser arServerContext, ARServerForm formName, Template template, int startFrom, int chunkSize, OutputInteger recordsCount, RemedyEntryEventAdapter adapter) throws RemedyReadFailedException {
+    public RemedyEventResponse readRemedyTickets(ARServerUser arServerContext, ARServerForm formName, Template template, int startFrom, int chunkSize, OutputInteger recordsCount, RemedyEntryEventAdapter adapter) throws RemedyReadFailedException {
+        RemedyEventResponse response = new RemedyEventResponse();
         //keeping as set to avoid duplicates
         Set<Integer> fieldsList = new HashSet<>();
         template.getFieldItemMap().values().forEach(fieldItem -> {
@@ -151,17 +153,27 @@ public class GenericRemedyReader implements RemedyReader {
                     continue;
                 } else {
                     log.error("Skipping the read process, Reading tickets Failed for starting : {}, chunk size {} even after retrying for {} times", new Object[]{startFrom, chunkSize, retryCount});
-                    throw new RemedyReadFailedException("Skipping the read process, Reading tickets Failed for starting : "+startFrom+", chunk size "+chunkSize+" even after retrying for "+retryCount+" times");
-                    
+                    throw new RemedyReadFailedException("Skipping the read process, Reading tickets Failed for starting : " + startFrom + ", chunk size " + chunkSize + " even after retrying for " + retryCount + " times");
+
                 }
             }
         }
         List<TSIEvent> payloadList = new ArrayList<TSIEvent>();
-        entryList.forEach(entry -> {
-            payloadList.add(adapter.convertEntryToEvent(template, entry));
-        });
-
-        return payloadList;
+        int largeEventCount = 0;
+        for (Entry entry : entryList) {
+            TSIEvent event = adapter.convertEntryToEvent(template, entry);
+            if (StringUtil.isObjectJsonSizeAllowed(event)) {
+                payloadList.add(event);
+            } else {
+                largeEventCount++;
+            }
+        }
+        if (largeEventCount > 0) {
+            log.error("{} events dropped before sending to TSI, Events size is greater than allowed limit({}). Please review the field mapping", new Object[]{largeEventCount, Constants.MAX_EVENT_SIZE_ALLOWED_BYTES});
+        }
+        response.setValidEventList(payloadList);
+        response.setLargeInvalidEventCount(largeEventCount);
+        return response;
     }
 
     @Override
@@ -174,7 +186,7 @@ public class GenericRemedyReader implements RemedyReader {
                 if (message.getMessageNum() == ARErrors.AR_WARN_MAX_ENTRIES_SERVER) {
                     returnVal = true;
                     // not breaking here to handle the case of having more than one message with
-                 } else {
+                } else {
                     // Adding all the warnings other than AR_WARN_MAX_ENTRIES_SERVER to the server context so that this warning wont be ignored in the further iterations.
                     updatedMessages.add(message);
                 }

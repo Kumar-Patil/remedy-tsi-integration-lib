@@ -35,7 +35,7 @@ public class GenericTemplatePreParser implements TemplatePreParser {
 
     private static final String INCIDENT_CONFIG_FILE = "incidentDefaultTemplate.json";
     private static final String CHANGE_CONFIG_FILE = "changeDefaultTemplate.json";
-    
+
     @Override
     public Template loadDefaults(ARServerForm form) throws ParsingException {
         String fileName = "";
@@ -56,61 +56,68 @@ public class GenericTemplatePreParser implements TemplatePreParser {
             throw new ParsingException(StringUtil.format(Constants.CONFIG_FILE_NOT_VALID, new Object[]{e.getMessage()}));
         }
 
-        // Read the config details and map to pojo
-        String configString;
-        Configuration config=new Configuration();
+        Configuration config = new Configuration();
         try {
             JsonNode configuration = rootNode.get(Constants.CONFIG_NODE_NAME);
-            if(configuration!=null){
-            	JsonNode hostNode = configuration.get(Constants.CONFIG_HOSTNAME_NODE_NAME);
-            	if(hostNode!=null)
-            	config.setRemedyHostName(hostNode.asText()); 
-            	
-            	JsonNode portNode = configuration.get(Constants.CONFIG_PORT_NODE_NAME);
-            	if(portNode!=null)
-            	config.setRemedyPort(Integer.getInteger(portNode.asText())); 
-            	
-            	JsonNode userNode = configuration.get(Constants.CONFIG_USERNAME_NODE_NAME);
-            	if(userNode!=null)
-            	config.setRemedyUserName(userNode.asText());
-            	
-            	JsonNode passNode = configuration.get(Constants.CONFIG_PASSWORD_NODE_NAME);
-            	if(passNode!=null)
-            	config.setRemedyPassword(passNode.asText());
-            	
-            	JsonNode tsiEndNode = configuration.get(Constants.CONFIG_TSIENDPOINT_NODE_NAME);
-            	if(tsiEndNode!=null)
-            	config.setTsiEventEndpoint(tsiEndNode.asText());
-            	
-            	JsonNode tsiKeyNode = configuration.get(Constants.CONFIG_TSITOKEN_NODE_NAME);
-            	if(tsiKeyNode!=null)
-            	config.setTsiApiToken(tsiKeyNode.asText());
-            	
-            	//Setting Config chunk size as constant
-            	config.setChunkSize(Constants.CONFIG_CHUNK_SIZE);
-            	
-            	ObjectReader obReader =  mapper.reader(new TypeReference<List<Integer>>() {});
-            	JsonNode condFields = configuration.get(Constants.CONFIG_CONDFIELDS_NODE_NAME);
-            	if(condFields!=null){
-            	List<Integer> condList = obReader.readValue(condFields);
-            		config.setConditionFields(condList);
-            	}
-            	
-            	JsonNode statusFields = configuration.get(Constants.CONFIG_CONDSTATUSFIELDS_NODE_NAME);
-            	if(statusFields!=null){
-            	List<Integer> condList = obReader.readValue(statusFields);
-            		config.setQueryStatusList(condList);
-            	}
-            	
-            	JsonNode retryNode = configuration.get(Constants.CONFIG_RETRY_NODE_NAME);
-            	if(retryNode!=null)
-            	config.setRetryConfig(Integer.valueOf(retryNode.asInt()));
-            	
-            	JsonNode waitMsNode = configuration.get(Constants.CONFIG_WAITSMS_NODE_NAME);
-            	if(waitMsNode!=null)
-            	config.setWaitMsBeforeRetry(Integer.valueOf(waitMsNode.asInt()));
+            if (configuration != null) {
+                JsonNode hostNode = configuration.get(Constants.CONFIG_HOSTNAME_NODE_NAME);
+                if (hostNode != null) {
+                    config.setRemedyHostName(hostNode.asText());
+                }
+
+                JsonNode portNode = configuration.get(Constants.CONFIG_PORT_NODE_NAME);
+                if (portNode != null) {
+                    config.setRemedyPort(Integer.getInteger(portNode.asText()));
+                }
+
+                JsonNode userNode = configuration.get(Constants.CONFIG_USERNAME_NODE_NAME);
+                if (userNode != null) {
+                    config.setRemedyUserName(userNode.asText());
+                }
+
+                JsonNode passNode = configuration.get(Constants.CONFIG_PASSWORD_NODE_NAME);
+                if (passNode != null) {
+                    config.setRemedyPassword(passNode.asText());
+                }
+
+                JsonNode tsiEndNode = configuration.get(Constants.CONFIG_TSIENDPOINT_NODE_NAME);
+                if (tsiEndNode != null) {
+                    config.setTsiEventEndpoint(tsiEndNode.asText());
+                }
+
+                JsonNode tsiKeyNode = configuration.get(Constants.CONFIG_TSITOKEN_NODE_NAME);
+                if (tsiKeyNode != null) {
+                    config.setTsiApiToken(tsiKeyNode.asText());
+                }
+
+                //Setting Config chunk size as constant
+                config.setChunkSize(Constants.CONFIG_CHUNK_SIZE);
+
+                ObjectReader obReader = mapper.reader(new TypeReference<List<Integer>>() {
+                });
+                JsonNode condFields = configuration.get(Constants.CONFIG_CONDFIELDS_NODE_NAME);
+                if (condFields != null) {
+                    List<Integer> condList = obReader.readValue(condFields);
+                    config.setConditionFields(condList);
+                }
+
+                JsonNode statusFields = configuration.get(Constants.CONFIG_CONDSTATUSFIELDS_NODE_NAME);
+                if (statusFields != null) {
+                    List<Integer> condList = obReader.readValue(statusFields);
+                    config.setQueryStatusList(condList);
+                }
+
+                JsonNode retryNode = configuration.get(Constants.CONFIG_RETRY_NODE_NAME);
+                if (retryNode != null) {
+                    config.setRetryConfig(Integer.valueOf(retryNode.asInt()));
+                }
+
+                JsonNode waitMsNode = configuration.get(Constants.CONFIG_WAITSMS_NODE_NAME);
+                if (waitMsNode != null) {
+                    config.setWaitMsBeforeRetry(Integer.valueOf(waitMsNode.asInt()));
+                }
             }
-           template.setConfig(config);
+            template.setConfig(config);
         } catch (IOException e) {
             throw new ParsingException(StringUtil.format(Constants.CONFIG_PROPERTY_NOT_FOUND, new Object[]{e.getMessage()}));
         }
@@ -146,15 +153,15 @@ public class GenericTemplatePreParser implements TemplatePreParser {
     }
 
     private String getFile(String fileName) throws IOException {
-		//Get file from resources folder
+        //Get file from resources folder
         InputStream inputStream = ClassLoader.getSystemResourceAsStream(fileName);
         InputStreamReader streamReader = new InputStreamReader(inputStream, "UTF-8");
         BufferedReader in = new BufferedReader(streamReader);
-        StringBuffer text= new StringBuffer("");
+        StringBuffer text = new StringBuffer("");
         for (String line; (line = in.readLine()) != null;) {
-        	text = text.append(line);
+            text = text.append(line);
         }
         return text.toString();
     }
-    
+
 }
