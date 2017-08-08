@@ -5,6 +5,7 @@ import java.util.List;
 public class RemedyEventResponse {
 
     private List<TSIEvent> validEventList;
+    private List<TSIEvent> invalidEventList;
     private int largeInvalidEventCount;
 
     public List<TSIEvent> getValidEventList() {
@@ -22,4 +23,12 @@ public class RemedyEventResponse {
     public void setLargeInvalidEventCount(int largeInvalidEventCount) {
         this.largeInvalidEventCount = largeInvalidEventCount;
     }
+
+	public List<TSIEvent> getInvalidEventList() {
+		return invalidEventList;
+	}
+
+	public void setInvalidEventList(List<TSIEvent> invalidEventList) {
+		this.invalidEventList = invalidEventList;
+	}
 }

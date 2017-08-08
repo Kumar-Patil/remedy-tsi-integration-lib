@@ -159,20 +159,23 @@ public class GenericRemedyReader implements RemedyReader {
             }
         }
         List<TSIEvent> payloadList = new ArrayList<TSIEvent>();
+        List<TSIEvent> invalidPayloadList = new ArrayList<TSIEvent>();
         int largeEventCount = 0;
         for (Entry entry : entryList) {
             TSIEvent event = adapter.convertEntryToEvent(template, entry);
             if (StringUtil.isObjectJsonSizeAllowed(event)) {
                 payloadList.add(event);
             } else {
+                invalidPayloadList.add(event);
                 largeEventCount++;
             }
         }
         if (largeEventCount > 0) {
-            log.error("{} events dropped before sending to TSI, Events size is greater than allowed limit({}). Please review the field mapping", new Object[]{largeEventCount, Constants.MAX_EVENT_SIZE_ALLOWED_BYTES});
+            log.error("{} events dropped before sending to TSI, Events size is greater than allowed limit({} Bytes). Please review the field mapping", new Object[]{largeEventCount, Constants.MAX_EVENT_SIZE_ALLOWED_BYTES});
         }
         response.setValidEventList(payloadList);
         response.setLargeInvalidEventCount(largeEventCount);
+        response.setInvalidEventList(invalidPayloadList);
         return response;
     }
 
