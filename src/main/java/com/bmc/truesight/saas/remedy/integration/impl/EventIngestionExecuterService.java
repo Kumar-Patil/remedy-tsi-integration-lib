@@ -58,34 +58,37 @@ public class EventIngestionExecuterService {
                 Result resultitem;
                 try {
                     resultitem = indexed.getResult().get();
-                    if (resultitem.getSuccess() != null) {
-                        if (resultitem.getSuccess() == Success.TRUE) {
-                            successCount++;
-                        } else if (resultitem.getSuccess() == Success.FALSE) {
-                            failureCount++;
-                        } else if (resultitem.getSuccess() == Success.PARTIAL) {
-                            partialCount++;
+                    if (resultitem != null) {
+                        if (resultitem.getSuccess() != null) {
+                            if (resultitem.getSuccess() == Success.TRUE) {
+                                successCount++;
+                            } else if (resultitem.getSuccess() == Success.FALSE) {
+                                failureCount++;
+                            } else if (resultitem.getSuccess() == Success.PARTIAL) {
+                                partialCount++;
+                            }
+                        }
+
+                        if (resultitem.getAccepted() != null) {
+                            if (resultFinal.getAccepted() == null) {
+                                resultFinal.setAccepted(correctAcceptedIndexes(new ArrayList<>(resultitem.getAccepted()), indexed));
+                            } else {
+                                resultFinal.getAccepted().addAll(correctAcceptedIndexes(resultitem.getAccepted(), indexed));
+                            }
+                        }
+
+                        if (resultitem.getErrors() != null) {
+                            if (resultFinal.getErrors() == null) {
+                                resultFinal.setErrors(correctErrorIndexes(new ArrayList<>(resultitem.getErrors()), indexed));
+                            } else {
+                                resultFinal.getErrors().addAll(correctErrorIndexes(resultitem.getErrors(), indexed));
+                            }
+                        }
+                        if (resultitem.getSent() != 0) {
+                            resultFinal.setSent(resultFinal.getSent() + resultitem.getSent());
                         }
                     }
 
-                    if (resultitem.getAccepted() != null) {
-                        if (resultFinal.getAccepted() == null) {
-                            resultFinal.setAccepted(correctAcceptedIndexes(new ArrayList<>(resultitem.getAccepted()), indexed));
-                        } else {
-                            resultFinal.getAccepted().addAll(correctAcceptedIndexes(resultitem.getAccepted(), indexed));
-                        }
-                    }
-
-                    if (resultitem.getErrors() != null) {
-                        if (resultFinal.getErrors() == null) {
-                            resultFinal.setErrors(correctErrorIndexes(new ArrayList<>(resultitem.getErrors()), indexed));
-                        } else {
-                            resultFinal.getErrors().addAll(correctErrorIndexes(resultitem.getErrors(), indexed));
-                        }
-                    }
-                    if (resultitem.getSent() != 0) {
-                        resultFinal.setSent(resultFinal.getSent() + resultitem.getSent());
-                    }
                 } catch (InterruptedException e) {
                     log.error(e.getMessage());
                 } catch (ExecutionException e) {

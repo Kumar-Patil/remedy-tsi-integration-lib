@@ -46,16 +46,18 @@ public class CallableBulkEventHttpClient implements Callable<Result>, BulkEventH
         return pushBulkEventsToTSI(eventList);
     }
 
-    private String convertStreamToString(InputStream instream) {
+    private TSIEventResponse getResponseFromInputStream(InputStream instream) {
         BufferedReader reader = new BufferedReader(new InputStreamReader(instream));
-        StringBuilder sb = new StringBuilder();
-        String line = null;
+        ObjectMapper mapper = new ObjectMapper();
+        TSIEventResponse resp = null;
         try {
-            while ((line = reader.readLine()) != null) {
-                sb.append(line + "\n");
-            }
-        } catch (IOException e) {
-            LOG.debug("Exception in converting input stream to String, {}", e.getMessage());
+            resp = mapper.readValue(reader, TSIEventResponse.class);
+        } catch (JsonParseException e1) {
+            LOG.error("Response Json parsing failed,{}", e1.getMessage());
+        } catch (JsonMappingException e1) {
+            LOG.error("Response Json mapping failed,{}", e1.getMessage());
+        } catch (IOException e1) {
+            LOG.error(e1.getMessage());
         } finally {
             try {
                 instream.close();
@@ -63,7 +65,7 @@ public class CallableBulkEventHttpClient implements Callable<Result>, BulkEventH
                 LOG.debug("Exception in closing the input stream, {}", e.getMessage());
             }
         }
-        return sb.toString();
+        return resp;
     }
 
     public static String encodeBase64(final String encodeToken) {
@@ -81,14 +83,15 @@ public class CallableBulkEventHttpClient implements Callable<Result>, BulkEventH
         HttpClient httpClient = null;
         boolean isSuccessful = false;
         int retryCount = 0;
+        httpClient = HttpClientBuilder.create().build();
+        HttpPost httpPost = new HttpPost(this.configuration.getTsiEventEndpoint());
+        httpPost.addHeader("Authorization", "Basic " + encodeBase64("" + ":" + this.configuration.getTsiApiToken()));
+        httpPost.addHeader("Content-Type", "application/json");
+        httpPost.addHeader("accept", "application/json");
+        httpPost.addHeader("User-Agent", "RemedyScript");
+        ObjectMapper mapper = new ObjectMapper();
+
         while (!isSuccessful && retryCount <= this.configuration.getRetryConfig()) {
-            httpClient = HttpClientBuilder.create().build();
-            HttpPost httpPost = new HttpPost(this.configuration.getTsiEventEndpoint());
-            httpPost.addHeader("Authorization", "Basic " + encodeBase64("" + ":" + this.configuration.getTsiApiToken()));
-            httpPost.addHeader("Content-Type", "application/json");
-            httpPost.addHeader("accept", "application/json");
-            httpPost.addHeader("User-Agent", "RemedyScript");
-            ObjectMapper mapper = new ObjectMapper();
             String jsonInString = null;
             try {
                 jsonInString = mapper.writeValueAsString(bulkEvents);
@@ -110,7 +113,7 @@ public class CallableBulkEventHttpClient implements Callable<Result>, BulkEventH
                         LOG.debug("[Retry  {} ], Waiting for {} sec before trying again ......", retryCount, (this.configuration.getWaitMsBeforeRetry() / 1000));
                         Thread.sleep(this.configuration.getWaitMsBeforeRetry());
                     } catch (InterruptedException e1) {
-                        LOG.debug("Thread interrupted ......");
+                        LOG.debug("Thread interrupted ......{}", e1.getMessage());
                     }
                     continue;
                 } else {
@@ -119,17 +122,15 @@ public class CallableBulkEventHttpClient implements Callable<Result>, BulkEventH
             }
 
             int statusCode = response.getStatusLine().getStatusCode();
-            if (statusCode != Constants.EVENT_INGESTION_STATE_SUCCESS
-                    && statusCode != Constants.EVENT_INGESTION_STATE_ACCEPTED) {
+            if (statusCode != Constants.EVENT_INGESTION_STATE_SUCCESS && statusCode != Constants.EVENT_INGESTION_STATE_ACCEPTED) {
                 if (retryCount < this.configuration.getRetryConfig()) {
                     retryCount++;
                     LOG.debug("Sending Event did not result in success, response status Code : {} , {}", new Object[]{response.getStatusLine().getStatusCode(), response.getStatusLine().getReasonPhrase()});
                     try {
-                        LOG.debug("[Retry  {} ], Waiting for {} sec before trying again ......", retryCount,
-                                (this.configuration.getWaitMsBeforeRetry() / 1000));
+                        LOG.debug("[Retry  {} ], Waiting for {} sec before trying again ......", retryCount, (this.configuration.getWaitMsBeforeRetry() / 1000));
                         Thread.sleep(this.configuration.getWaitMsBeforeRetry());
                     } catch (InterruptedException e1) {
-                        LOG.debug("Thread interrupted ......");
+                        LOG.debug("Thread interrupted ......{}",e1.getMessage());
                     }
                     continue;
                 } else {
@@ -139,30 +140,23 @@ public class CallableBulkEventHttpClient implements Callable<Result>, BulkEventH
                 HttpEntity entity = response.getEntity();
                 if (entity != null) {
                     InputStream instream = null;
+
                     try {
                         instream = entity.getContent();
-                        String resultJson = convertStreamToString(instream);
-                        TSIEventResponse eventResponse = mapper.readValue(resultJson, TSIEventResponse.class);
-                        result = eventResponse.getResult();
-                        if (result.getAccepted() != null) {
-                            LOG.debug("Response from event ingestion API Sent:{},succeful:{},error:{}", result.getSent(), result.getAccepted() != null ? result.getAccepted().size() : 0, result.getErrors() != null ? result.getErrors().size() : 0);
-                        }
-                        isSuccessful = true;
                     } catch (UnsupportedOperationException e) {
-                        LOG.error(e.getMessage());
-                    } catch (JsonParseException e) {
-                        LOG.error(e.getMessage());
-                    } catch (JsonMappingException e) {
-                        LOG.error(e.getMessage());
+                        LOG.error("Getting Response input stream failed {}",e.getMessage());
                     } catch (IOException e) {
-                        LOG.error(e.getMessage());
-                    } finally {
-                        try {
-                            instream.close();
-                        } catch (IOException e) {
-                            LOG.error(e.getMessage());
-                        }
+                    	LOG.error("Getting Response input stream failed {}",e.getMessage());
                     }
+                    TSIEventResponse eventResponse = getResponseFromInputStream(instream);
+                    if (eventResponse == null) {
+                        LOG.debug("Event Response is null, returning result as Null");
+                    }
+                    result = eventResponse.getResult();
+                    if (result.getAccepted() != null) {
+                        LOG.debug("Response from event ingestion API Sent:{},successful:{},error:{}", result.getSent(), result.getAccepted() != null ? result.getAccepted().size() : 0, result.getErrors() != null ? result.getErrors().size() : 0);
+                    }
+                    isSuccessful = true;
                 }
             }
         }

@@ -171,7 +171,7 @@ public class GenericRemedyReader implements RemedyReader {
             }
         }
         if (largeEventCount > 0) {
-            log.error("{} events dropped before sending to TSI, Events size is greater than allowed limit({} Bytes). Please review the field mapping", new Object[]{largeEventCount, Constants.MAX_EVENT_SIZE_ALLOWED_BYTES});
+            log.error("{} event(s) dropped before sending to TSI, size of event is greater than allowed limit({} Bytes). Please review the field mapping", new Object[]{largeEventCount, Constants.MAX_EVENT_SIZE_ALLOWED_BYTES});
         }
         response.setValidEventList(payloadList);
         response.setLargeInvalidEventCount(largeEventCount);
