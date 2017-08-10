@@ -139,7 +139,7 @@ public class GenericRemedyReader implements RemedyReader {
                 entryList = arServerContext.getListEntryObjects(formName.toString(), qualInfoF,
                         startFrom, chunkSize, sortOrder, queryFieldsList, false, recordsCount);
                 isSuccessful = true;
-                log.info("Recieved {} tickets  for starting index : {}, chunk size {}  ", new Object[]{entryList.size(), startFrom, chunkSize});
+                log.debug("Recieved {} tickets  for starting index : {}, chunk size {}  ", new Object[]{entryList.size(), startFrom, chunkSize});
             } catch (ARException e) {
                 if (retryCount < template.getConfig().getRetryConfig()) {
                     retryCount++;
