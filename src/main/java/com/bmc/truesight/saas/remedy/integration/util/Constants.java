@@ -21,6 +21,8 @@ public interface Constants {
     Long MAX_EVENT_SIZE_ALLOWED_BYTES = 32000l;
     int EVENT_INGESTION_STATE_SUCCESS = 200;
     int EVENT_INGESTION_STATE_ACCEPTED = 202;
+    int EVENTASYNC_FIXED_THREAD_POOL = 10;
+    int EVENTS_INGESTION_SIZE = 100;
     //Messages
     String CONFIG_FILE_NOT_FOUND = "Could not read the configuration file from location({0}) or it has different encoding than UTF8";
     String CONFIG_FILE_NOT_VALID = "The configuration json is not a valid JSON,{0})";

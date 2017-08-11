@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -40,7 +41,7 @@ public class GenericBulkEventHttpClient implements BulkEventHttpClient {
 
     @Override
     public Result pushBulkEventsToTSI(final List<TSIEvent> bulkEvents) throws BulkEventsIngestionFailedException {
-        LOG.info("Starting ingestion of {} events  to TSI ", bulkEvents.size());
+        LOG.debug("Starting ingestion of {} events  to TSI ", bulkEvents.size());
         if (bulkEvents.size() <= 0) {
             throw new BulkEventsIngestionFailedException("Cannot send empty events list to TSI");
         }
@@ -98,7 +99,7 @@ public class GenericBulkEventHttpClient implements BulkEventHttpClient {
                     }
                     continue;
                 } else {
-                    throw new BulkEventsIngestionFailedException("Sending Event to TSI did not result in success, response status Code :{},{}" + response.getStatusLine().getStatusCode() + "," + response.getStatusLine().getReasonPhrase());
+                    throw new BulkEventsIngestionFailedException("Sending Event to TSI did not result in success, response status Code :" + response.getStatusLine().getStatusCode() + "," + response.getStatusLine().getReasonPhrase());
                 }
             } else {
                 HttpEntity entity = response.getEntity();
@@ -107,9 +108,9 @@ public class GenericBulkEventHttpClient implements BulkEventHttpClient {
                     try {
                         instream = entity.getContent();
                         String resultJson = convertStreamToString(instream);
-                        LOG.debug("Response from event ingestion API {}", resultJson);
                         TSIEventResponse eventResponse = mapper.readValue(resultJson, TSIEventResponse.class);
                         result = eventResponse.getResult();
+                        LOG.debug("Response from event ingestion API Sent:{},succeful:{},error:{}", result.getSent(), result.getAccepted() != null ? result.getAccepted().size() : 0, result.getErrors() != null ? result.getErrors().size() : 0);
                         isSuccessful = true;
                     } catch (UnsupportedOperationException e) {
                         LOG.error(e.getMessage());
@@ -156,4 +157,5 @@ public class GenericBulkEventHttpClient implements BulkEventHttpClient {
         byte[] encoded = Base64.encodeBase64(encodeToken.getBytes());
         return new String(encoded);
     }
+
 }

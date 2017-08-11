@@ -8,7 +8,20 @@ package com.bmc.truesight.saas.remedy.integration.beans;
  */
 public class EventSource {
 
-    private String name;
+    @Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("{\"name\":");
+		builder.append(name);
+		builder.append(", \"type\":");
+		builder.append(type);
+		builder.append(", \"ref\":");
+		builder.append(ref);
+		builder.append("}");
+		return builder.toString();
+	}
+
+	private String name;
     private String type;
     private String ref;
 
