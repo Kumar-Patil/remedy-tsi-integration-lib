@@ -36,5 +36,6 @@ public interface Constants {
     String FACTORY_INITIALIZATION_EXCEPTION = "Failed to create proper instance in the factory, Please ensure you are using right parameters";
     String PROPERTY_NAME_INVALID = "The property \"{0}\" is not a valid Field Name, Only AlphaNumeric and Underscore are allowed characters in the Field Names.";
     String PROPERTY_FIELD_COUNT_EXCEEDS = "Event properties field count of {0} exceeds maximum of {1}.";
+    String DATERANGE_VALIDATION_FAILED = "Start date & End date in config is not appropriate, start date should not be greater than end date and end date should not be greater than current date.";
 
 }

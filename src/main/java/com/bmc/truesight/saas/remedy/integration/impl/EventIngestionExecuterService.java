@@ -40,7 +40,7 @@ public class EventIngestionExecuterService {
                     taskSize = Constants.EVENTS_INGESTION_SIZE;
                     totalSize = totalSize - taskSize;
                 }
-                log.debug("Adding events from {} to {} to a thread ", startIndex, (startIndex + taskSize));
+                log.debug("Adding events from {} to {} to a thread ", startIndex, (startIndex + taskSize - 1));
                 Future<Result> result = executor.submit(new CallableBulkEventHttpClient(eventsList.subList(startIndex, (startIndex + taskSize)), configuration));
                 IndexedResult indexedResult = new IndexedResult();
                 indexedResult.setResult(result);
@@ -96,7 +96,7 @@ public class EventIngestionExecuterService {
                     throw new BulkEventsIngestionFailedException(e.getMessage());
                 }
             }
-            if (partialCount > 0) {
+            if (partialCount > 0 || (failureCount > 0 && successCount > 0)) {
                 resultFinal.setSuccess(Success.PARTIAL);
             } else if (failureCount > 0) {
                 resultFinal.setSuccess(Success.FALSE);

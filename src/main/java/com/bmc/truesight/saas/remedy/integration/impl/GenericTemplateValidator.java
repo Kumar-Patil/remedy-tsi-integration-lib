@@ -1,5 +1,6 @@
 package com.bmc.truesight.saas.remedy.integration.impl;
 
+import java.util.Date;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
@@ -36,11 +37,16 @@ public class GenericTemplateValidator implements TemplateValidator {
                 || (config.getChunkSize() <= 0)
                 || (config.getRetryConfig() < 0)
                 || (config.getWaitMsBeforeRetry() <= 0)
-                || (StringUtils.isEmpty(config.getStartDateTime().toString()))
-                || (StringUtils.isEmpty(config.getEndDateTime().toString()))) {
+                || (config.getStartDateTime() == null || (config.getStartDateTime() != null && StringUtils.isEmpty(config.getStartDateTime().toString())))
+                || (config.getEndDateTime() == null || (config.getEndDateTime() != null && StringUtils.isEmpty(config.getEndDateTime().toString())))) {
             throw new ValidationException(StringUtil.format(Constants.CONFIG_VALIDATION_FAILED, new Object[]{}));
         }
-
+        if (config.getStartDateTime().after(config.getEndDateTime())) {
+            throw new ValidationException(StringUtil.format(Constants.DATERANGE_VALIDATION_FAILED, new Object[]{}));
+        }
+        if (config.getEndDateTime().after(new Date())) {
+            throw new ValidationException(StringUtil.format(Constants.DATERANGE_VALIDATION_FAILED, new Object[]{}));
+        }
         // validate payload configuration
         if (payload.getTitle() != null && payload.getTitle().startsWith("@") && !fieldItemMap.containsKey(payload.getTitle())) {
             throw new ValidationException(StringUtil.format(Constants.PAYLOAD_PLACEHOLDER_DEFINITION_MISSING,
