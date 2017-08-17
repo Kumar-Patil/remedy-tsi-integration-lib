@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 
@@ -21,6 +22,8 @@ import com.bmc.thirdparty.org.apache.commons.codec.binary.Base64;
 import com.bmc.truesight.saas.remedy.integration.BulkEventHttpClient;
 import com.bmc.truesight.saas.remedy.integration.beans.Configuration;
 import com.bmc.truesight.saas.remedy.integration.beans.Result;
+import com.bmc.truesight.saas.remedy.integration.beans.Success;
+import com.bmc.truesight.saas.remedy.integration.beans.Error;
 import com.bmc.truesight.saas.remedy.integration.beans.TSIEvent;
 import com.bmc.truesight.saas.remedy.integration.beans.TSIEventResponse;
 import com.bmc.truesight.saas.remedy.integration.exception.BulkEventsIngestionFailedException;
@@ -42,8 +45,22 @@ public class CallableBulkEventHttpClient implements Callable<Result>, BulkEventH
     private Configuration configuration;
 
     @Override
-    public Result call() throws Exception {
-        return pushBulkEventsToTSI(eventList);
+    public Result call() {
+        Result result = null;
+        try {
+            result = pushBulkEventsToTSI(eventList);
+        } catch (BulkEventsIngestionFailedException e) {
+            result = new Result();
+            List<Error> errorList = new ArrayList<>();
+            for (int i = 0; i < eventList.size(); i++) {
+                Error error = new Error(i, e.getMessage());
+                errorList.add(error);
+            }
+            result.setErrors(errorList);
+            result.setSent(0);
+            result.setSuccess(Success.FALSE);
+        }
+        return result;
     }
 
     private TSIEventResponse getResponseFromInputStream(InputStream instream) {
@@ -75,7 +92,6 @@ public class CallableBulkEventHttpClient implements Callable<Result>, BulkEventH
 
     @Override
     public Result pushBulkEventsToTSI(List<TSIEvent> bulkEvents) throws BulkEventsIngestionFailedException {
-        LOG.debug("Starting ingestion of {} events  to TSI ", bulkEvents.size());
         if (bulkEvents.size() <= 0) {
             throw new BulkEventsIngestionFailedException("Cannot send empty events list to TSI");
         }
@@ -83,20 +99,22 @@ public class CallableBulkEventHttpClient implements Callable<Result>, BulkEventH
         HttpClient httpClient = null;
         boolean isSuccessful = false;
         int retryCount = 0;
-        httpClient = HttpClientBuilder.create().build();
-        HttpPost httpPost = new HttpPost(this.configuration.getTsiEventEndpoint());
-        httpPost.addHeader("Authorization", "Basic " + encodeBase64("" + ":" + this.configuration.getTsiApiToken()));
-        httpPost.addHeader("Content-Type", "application/json");
-        httpPost.addHeader("accept", "application/json");
-        httpPost.addHeader("User-Agent", "RemedyScript");
+
         ObjectMapper mapper = new ObjectMapper();
 
         while (!isSuccessful && retryCount <= this.configuration.getRetryConfig()) {
             String jsonInString = null;
+            httpClient = HttpClientBuilder.create().build();
+            HttpPost httpPost = new HttpPost(this.configuration.getTsiEventEndpoint());
+            httpPost.addHeader("Authorization", "Basic " + encodeBase64("" + ":" + this.configuration.getTsiApiToken()));
+            httpPost.addHeader("Content-Type", "application/json");
+            httpPost.addHeader("accept", "application/json");
+            httpPost.addHeader("User-Agent", "RemedyScript");
             try {
                 jsonInString = mapper.writeValueAsString(bulkEvents);
                 Charset charsetD = Charset.forName("UTF-8");
                 StringEntity postingString = new StringEntity(jsonInString, charsetD);
+                LOG.debug("Starting ingestion of {} events  to TSI with payload size as {} bytes", bulkEvents.size(), jsonInString.getBytes("UTF-8").length);
                 httpPost.setEntity(postingString);
             } catch (Exception e) {
                 LOG.debug("Can not Send events, There is an issue in creating http request data [{}]", e.getMessage());
@@ -130,11 +148,11 @@ public class CallableBulkEventHttpClient implements Callable<Result>, BulkEventH
                         LOG.debug("[Retry  {} ], Waiting for {} sec before trying again ......", retryCount, (this.configuration.getWaitMsBeforeRetry() / 1000));
                         Thread.sleep(this.configuration.getWaitMsBeforeRetry());
                     } catch (InterruptedException e1) {
-                        LOG.debug("Thread interrupted ......{}",e1.getMessage());
+                        LOG.debug("Thread interrupted ......{}", e1.getMessage());
                     }
                     continue;
                 } else {
-                    throw new BulkEventsIngestionFailedException("Sending Event to TSI did not result in success, response status Code :{},{}" + response.getStatusLine().getStatusCode() + "," + response.getStatusLine().getReasonPhrase());
+                    throw new BulkEventsIngestionFailedException("Sending Event to TSI did not result in success, response status Code :" + response.getStatusLine().getStatusCode() + "," + response.getStatusLine().getReasonPhrase());
                 }
             } else {
                 HttpEntity entity = response.getEntity();
@@ -144,9 +162,9 @@ public class CallableBulkEventHttpClient implements Callable<Result>, BulkEventH
                     try {
                         instream = entity.getContent();
                     } catch (UnsupportedOperationException e) {
-                        LOG.error("Getting Response input stream failed {}",e.getMessage());
+                        LOG.error("Getting Response input stream failed {}", e.getMessage());
                     } catch (IOException e) {
-                    	LOG.error("Getting Response input stream failed {}",e.getMessage());
+                        LOG.error("Getting Response input stream failed {}", e.getMessage());
                     }
                     TSIEventResponse eventResponse = getResponseFromInputStream(instream);
                     if (eventResponse == null) {
