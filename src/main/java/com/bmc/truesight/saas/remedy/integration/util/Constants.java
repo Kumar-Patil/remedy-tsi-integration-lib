@@ -35,7 +35,7 @@ public interface Constants {
     String REMEDY_LOGIN_FAILED = "Login failed to Remedy Server, ({0})";
     String FACTORY_INITIALIZATION_EXCEPTION = "Failed to create proper instance in the factory, Please ensure you are using right parameters";
     String PROPERTY_NAME_INVALID = "The property \"{0}\" is not a valid Field Name, Only AlphaNumeric and Underscore are allowed characters in the Field Names.";
-    String PROPERTY_FIELD_COUNT_EXCEEDS = "Event properties field count of {0} exceeds maximum of {1}.";
+    String PROPERTY_FIELD_COUNT_EXCEEDS = "The number of properties captured(ie {0}) in the Remedy field mapping exceeds the maximum count of {1}, please review the field mapping and reduce the count for successful ingestion..";
     String DATERANGE_VALIDATION_FAILED = "Start date & End date in config is not appropriate, start date should not be greater than end date and end date should not be greater than current date.";
 
 }
