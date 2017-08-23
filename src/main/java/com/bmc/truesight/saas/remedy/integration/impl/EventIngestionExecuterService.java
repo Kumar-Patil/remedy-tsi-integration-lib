@@ -7,6 +7,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
 
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,13 +19,17 @@ import com.bmc.truesight.saas.remedy.integration.beans.Result;
 import com.bmc.truesight.saas.remedy.integration.beans.Success;
 import com.bmc.truesight.saas.remedy.integration.beans.TSIEvent;
 import com.bmc.truesight.saas.remedy.integration.exception.BulkEventsIngestionFailedException;
+import com.bmc.truesight.saas.remedy.integration.exception.TsiAuthenticationFailedException;
 import com.bmc.truesight.saas.remedy.integration.util.Constants;
 
 public class EventIngestionExecuterService {
 
     private final static Logger log = LoggerFactory.getLogger(EventIngestionExecuterService.class);
 
-    public Result ingestEvents(List<TSIEvent> eventsList, Configuration configuration) throws BulkEventsIngestionFailedException {
+    public Result ingestEvents(List<TSIEvent> eventsList, Configuration configuration) throws BulkEventsIngestionFailedException, TsiAuthenticationFailedException {
+
+        int EVENTS_INGESTION_SIZE = configuration.getChunkSize() / configuration.getThreadCount();
+
         ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(Constants.EVENTASYNC_FIXED_THREAD_POOL);
         Result resultFinal = new Result();
         List<IndexedResult> resultList = new ArrayList<>();
@@ -33,11 +38,11 @@ public class EventIngestionExecuterService {
             int startIndex = 0;
             while (totalSize > 0) {
                 int taskSize = 0;
-                if (totalSize <= Constants.EVENTS_INGESTION_SIZE) {
+                if (totalSize <= EVENTS_INGESTION_SIZE) {
                     taskSize = totalSize;
                     totalSize = 0;
                 } else {
-                    taskSize = Constants.EVENTS_INGESTION_SIZE;
+                    taskSize = EVENTS_INGESTION_SIZE;
                     totalSize = totalSize - taskSize;
                 }
                 log.debug("Adding events from {} to {} to a thread ", startIndex, (startIndex + taskSize - 1));
@@ -93,7 +98,12 @@ public class EventIngestionExecuterService {
                     log.error(e.getMessage());
                 } catch (ExecutionException e) {
                     executor.shutdownNow();
-                    throw new BulkEventsIngestionFailedException(e.getMessage());
+                    if (ExceptionUtils.indexOfThrowable(e, TsiAuthenticationFailedException.class) != -1) {
+                        log.debug("Execution exception, TsiAuthenticationFailedException");
+                        throw new TsiAuthenticationFailedException("TSI authentication failed, please verify the Api Token / Api endpoint");
+                    } else {
+                        throw new BulkEventsIngestionFailedException(e.getMessage());
+                    }
                 }
             }
             if (partialCount > 0 || (failureCount > 0 && successCount > 0)) {

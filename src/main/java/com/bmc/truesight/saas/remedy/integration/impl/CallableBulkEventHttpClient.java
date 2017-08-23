@@ -21,12 +21,13 @@ import org.slf4j.LoggerFactory;
 import com.bmc.thirdparty.org.apache.commons.codec.binary.Base64;
 import com.bmc.truesight.saas.remedy.integration.BulkEventHttpClient;
 import com.bmc.truesight.saas.remedy.integration.beans.Configuration;
+import com.bmc.truesight.saas.remedy.integration.beans.Error;
 import com.bmc.truesight.saas.remedy.integration.beans.Result;
 import com.bmc.truesight.saas.remedy.integration.beans.Success;
-import com.bmc.truesight.saas.remedy.integration.beans.Error;
 import com.bmc.truesight.saas.remedy.integration.beans.TSIEvent;
 import com.bmc.truesight.saas.remedy.integration.beans.TSIEventResponse;
 import com.bmc.truesight.saas.remedy.integration.exception.BulkEventsIngestionFailedException;
+import com.bmc.truesight.saas.remedy.integration.exception.TsiAuthenticationFailedException;
 import com.bmc.truesight.saas.remedy.integration.util.Constants;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -45,7 +46,7 @@ public class CallableBulkEventHttpClient implements Callable<Result>, BulkEventH
     private Configuration configuration;
 
     @Override
-    public Result call() {
+    public Result call() throws TsiAuthenticationFailedException {
         Result result = null;
         try {
             result = pushBulkEventsToTSI(eventList);
@@ -91,7 +92,7 @@ public class CallableBulkEventHttpClient implements Callable<Result>, BulkEventH
     }
 
     @Override
-    public Result pushBulkEventsToTSI(List<TSIEvent> bulkEvents) throws BulkEventsIngestionFailedException {
+    public Result pushBulkEventsToTSI(List<TSIEvent> bulkEvents) throws BulkEventsIngestionFailedException, TsiAuthenticationFailedException {
         if (bulkEvents.size() <= 0) {
             throw new BulkEventsIngestionFailedException("Cannot send empty events list to TSI");
         }
@@ -116,6 +117,7 @@ public class CallableBulkEventHttpClient implements Callable<Result>, BulkEventH
                 StringEntity postingString = new StringEntity(jsonInString, charsetD);
                 LOG.debug("Starting ingestion of {} events  to TSI with payload size as {} bytes", bulkEvents.size(), jsonInString.getBytes("UTF-8").length);
                 httpPost.setEntity(postingString);
+
             } catch (Exception e) {
                 LOG.debug("Can not Send events, There is an issue in creating http request data [{}]", e.getMessage());
                 throw new BulkEventsIngestionFailedException(e.getMessage());
@@ -140,7 +142,9 @@ public class CallableBulkEventHttpClient implements Callable<Result>, BulkEventH
             }
 
             int statusCode = response.getStatusLine().getStatusCode();
-            if (statusCode != Constants.EVENT_INGESTION_STATE_SUCCESS && statusCode != Constants.EVENT_INGESTION_STATE_ACCEPTED) {
+            if (statusCode == Constants.UNAUTHORIZED_STATUS) {
+                throw new TsiAuthenticationFailedException("TSI authentication failed, please verify the API Token or API Endpoint");
+            } else if (statusCode != Constants.EVENT_INGESTION_STATE_SUCCESS && statusCode != Constants.EVENT_INGESTION_STATE_ACCEPTED) {
                 if (retryCount < this.configuration.getRetryConfig()) {
                     retryCount++;
                     LOG.debug("Sending Event did not result in success, response status Code : {} , {}", new Object[]{response.getStatusLine().getStatusCode(), response.getStatusLine().getReasonPhrase()});

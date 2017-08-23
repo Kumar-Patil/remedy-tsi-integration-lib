@@ -24,11 +24,11 @@ public class RemedyEventResponse {
         this.largeInvalidEventCount = largeInvalidEventCount;
     }
 
-	public List<TSIEvent> getInvalidEventList() {
-		return invalidEventList;
-	}
+    public List<TSIEvent> getInvalidEventList() {
+        return invalidEventList;
+    }
 
-	public void setInvalidEventList(List<TSIEvent> invalidEventList) {
-		this.invalidEventList = invalidEventList;
-	}
+    public void setInvalidEventList(List<TSIEvent> invalidEventList) {
+        this.invalidEventList = invalidEventList;
+    }
 }

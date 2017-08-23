@@ -114,31 +114,31 @@ public class TSIEvent {
         this.message = message;
     }
 
-	@Override
-	public String toString() {
-		StringBuilder builder = new StringBuilder();
-		builder.append("{\"title\":");
-		builder.append(title);
-		builder.append(", \"fingerprintFields\":");
-		builder.append(fingerprintFields);
-		builder.append(", \"severity\":");
-		builder.append(severity);
-		builder.append(", \"status\":");
-		builder.append(status);
-		builder.append(", \"message\":");
-		builder.append(message);
-		builder.append(", \"properties\":");
-		builder.append(properties);
-		builder.append(", \"createdAt\":");
-		builder.append(createdAt);
-		builder.append(", \"eventClass\":");
-		builder.append(eventClass);
-		builder.append(", \"source\":");
-		builder.append(source);
-		builder.append(", \"sender\":");
-		builder.append(sender);
-		builder.append("}");
-		return builder.toString();
-	}
-   
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("{\"title\":");
+        builder.append(title);
+        builder.append(", \"fingerprintFields\":");
+        builder.append(fingerprintFields);
+        builder.append(", \"severity\":");
+        builder.append(severity);
+        builder.append(", \"status\":");
+        builder.append(status);
+        builder.append(", \"message\":");
+        builder.append(message);
+        builder.append(", \"properties\":");
+        builder.append(properties);
+        builder.append(", \"createdAt\":");
+        builder.append(createdAt);
+        builder.append(", \"eventClass\":");
+        builder.append(eventClass);
+        builder.append(", \"source\":");
+        builder.append(source);
+        builder.append(", \"sender\":");
+        builder.append(sender);
+        builder.append("}");
+        return builder.toString();
+    }
+
 }

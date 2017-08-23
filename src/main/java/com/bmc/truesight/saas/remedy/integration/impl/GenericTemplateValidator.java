@@ -4,6 +4,8 @@ import java.util.Date;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.bmc.truesight.saas.remedy.integration.TemplateValidator;
 import com.bmc.truesight.saas.remedy.integration.beans.Configuration;
@@ -22,6 +24,8 @@ import com.bmc.truesight.saas.remedy.integration.util.StringUtil;
  *
  */
 public class GenericTemplateValidator implements TemplateValidator {
+
+    private static final Logger log = LoggerFactory.getLogger(GenericTemplateValidator.class);
 
     @Override
     public boolean validate(Template template) throws ValidationException {
@@ -53,20 +57,31 @@ public class GenericTemplateValidator implements TemplateValidator {
                     new Object[]{payload.getTitle()}));
         }
 
-        // validate payload configuration
         for (String fpField : payload.getFingerprintFields()) {
-            if (fpField != null && fpField.startsWith("@") && !fieldItemMap.containsKey(fpField)) {
-                throw new ValidationException(
-                        StringUtil.format(Constants.PAYLOAD_PLACEHOLDER_DEFINITION_MISSING, new Object[]{fpField}));
+            if (fpField != null) {
+                if (fpField.startsWith("@")) {
+                    String field = fpField.substring(1);
+                    if (!Constants.FINGERPRINT_EVENT_FIELDS.contains(field)) {
+                        throw new ValidationException(StringUtil.format(Constants.EVENT_FIELD_MISSING, new Object[]{field, Constants.FINGERPRINT_EVENT_FIELDS}));
+                    }
+                } else {
+                    if (!payload.getProperties().containsKey(fpField)) {
+                        throw new ValidationException(StringUtil.format(Constants.EVENT_PROPERTY_FIELD_MISSING, new Object[]{fpField}));
+                    }
+                }
             }
         }
 
-        // validate payload configuration
         Map<String, String> properties = payload.getProperties();
         if (properties.keySet().size() > Constants.MAX_PROPERTY_FIELD_SUPPORTED) {
             throw new ValidationException(StringUtil.format(Constants.PROPERTY_FIELD_COUNT_EXCEEDS, new Object[]{properties.keySet().size(), Constants.MAX_PROPERTY_FIELD_SUPPORTED}));
         }
-
+        if (properties.containsKey("app_id")) {
+            String appId = properties.get("app_id");
+            if (!isValidAppId(appId)) {
+                throw new ValidationException(StringUtil.format(Constants.APPLICATION_NAME_INVALID, new Object[]{appId}));
+            }
+        }
         for (String key : properties.keySet()) {
             if (!StringUtil.isValidJavaIdentifier(key)) {
                 throw new ValidationException(StringUtil.format(Constants.PROPERTY_NAME_INVALID, new Object[]{key.trim()}));
@@ -118,4 +133,12 @@ public class GenericTemplateValidator implements TemplateValidator {
         return true;
     }
 
+    private boolean isValidAppId(String inputString) {
+        for (char c : inputString.toCharArray()) {
+            if (Constants.SPECIAL_CHARACTOR.indexOf(c, 0) >= 0) {
+                return false;
+            }
+        };
+        return true;
+    }
 }

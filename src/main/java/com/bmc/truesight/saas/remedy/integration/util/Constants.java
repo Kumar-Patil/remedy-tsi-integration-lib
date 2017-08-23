@@ -1,5 +1,9 @@
 package com.bmc.truesight.saas.remedy.integration.util;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 public interface Constants {
 
     String CONFIG_NODE_NAME = "config";
@@ -10,19 +14,32 @@ public interface Constants {
     String CONFIG_TSIENDPOINT_NODE_NAME = "tsiEventEndpoint";
     String CONFIG_TSITOKEN_NODE_NAME = "tsiApiToken";
     String CONFIG_CHUNKSIZE_NODE_NAME = "chunkSize";
+    String CONFIG_THREADS_NODE_NAME = "threadCount";
     String CONFIG_CONDFIELDS_NODE_NAME = "conditionFields";
     String CONFIG_CONDSTATUSFIELDS_NODE_NAME = "queryStatusList";
     String CONFIG_RETRY_NODE_NAME = "retryConfig";
     String CONFIG_WAITSMS_NODE_NAME = "waitMsBeforeRetry";
     String EVENTDEF_NODE_NAME = "eventDefinition";
+    List<String> FINGERPRINT_EVENT_FIELDS = new ArrayList<String>() {
+        {
+            add("source.name");
+            add("title");
+            add("status");
+            add("severity");
+            add("message");
+        }
+    };
+
     String PLACEHOLDER_START_TOKEN = "@";
     Integer CONFIG_CHUNK_SIZE = 1000;
     Integer MAX_PROPERTY_FIELD_SUPPORTED = 128;
     Long MAX_EVENT_SIZE_ALLOWED_BYTES = 32000l;
     int EVENT_INGESTION_STATE_SUCCESS = 200;
     int EVENT_INGESTION_STATE_ACCEPTED = 202;
+    int UNAUTHORIZED_STATUS = 401;
     int EVENTASYNC_FIXED_THREAD_POOL = 10;
-    int EVENTS_INGESTION_SIZE = 100;
+
+    String SPECIAL_CHARACTOR = "!#$%&'()*+,./:;<=>?@[]^`{|}~";
     //Messages
     String CONFIG_FILE_NOT_FOUND = "Could not read the configuration file from location({0}) or it has different encoding than UTF8";
     String CONFIG_FILE_NOT_VALID = "The configuration json is not a valid JSON,{0})";
@@ -37,5 +54,8 @@ public interface Constants {
     String PROPERTY_NAME_INVALID = "The property \"{0}\" is not a valid Field Name, Only AlphaNumeric and Underscore are allowed characters in the Field Names.";
     String PROPERTY_FIELD_COUNT_EXCEEDS = "The number of properties captured(ie {0}) in the Remedy field mapping exceeds the maximum count of {1}, please review the field mapping and reduce the count for successful ingestion..";
     String DATERANGE_VALIDATION_FAILED = "Start date & End date in config is not appropriate, start date should not be greater than end date and end date should not be greater than current date.";
+    String EVENT_FIELD_MISSING = "FingerPrintFields values are invalid, field \"{0}\" does not exist in Event fields. Accepted fields are {1}";
+    String EVENT_PROPERTY_FIELD_MISSING = "FingerPrintFields values are invalid, field \"{0}\" does not exist in user fields (in properties of eventDefinition)";
+    String APPLICATION_NAME_INVALID = "The application \"{0}\" is not valid , Only AlphaNumeric, Hyphen  and Underscore are allowed characters in the application name.";
 
 }

@@ -38,11 +38,6 @@ public class RemedyEntryEventAdapter {
         TSIEvent event = new TSIEvent(template.getEventDefinition());
 
         event.setTitle(getValueFromEntry(template, entry, event.getTitle()));
-        List<String> fPrintFields = new ArrayList<>();
-        event.getFingerprintFields().forEach(fingerPrint -> {
-            fPrintFields.add(getValueFromEntry(template, entry, fingerPrint));
-        });
-        event.setFingerprintFields(fPrintFields);
         Map<String, String> properties = event.getProperties();
         for (String key : properties.keySet()) {
             String val = getValueFromEntry(template, entry, properties.get(key));

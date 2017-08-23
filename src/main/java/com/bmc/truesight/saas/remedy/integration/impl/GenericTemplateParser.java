@@ -132,6 +132,7 @@ public class GenericTemplateParser implements TemplateParser {
         if (config.getRemedyPort() != null) {
             defaultConfig.setRemedyPort(config.getRemedyPort());
         }
+
         if (config.getRemedyUserName() != null && !config.getRemedyUserName().equals("")) {
             defaultConfig.setRemedyUserName(config.getRemedyUserName());
         }
@@ -147,10 +148,13 @@ public class GenericTemplateParser implements TemplateParser {
         if (config.getEndDateTime() != null) {
             defaultConfig.setEndDateTime(config.getEndDateTime());
         }
-        //Disabled ability to override from the user 
-        /* if (config.getChunkSize() != null) {
+        //ability to override from the user 
+        if (config.getChunkSize() != null) {
             defaultConfig.setChunkSize(config.getChunkSize());
-        }*/
+        }
+        if (config.getThreadCount() != null) {
+            defaultConfig.setThreadCount(config.getThreadCount());
+        }
         if (config.getRetryConfig() != null) {
             defaultConfig.setRetryConfig(config.getRetryConfig());
         }
