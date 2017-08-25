@@ -186,9 +186,6 @@ public class GenericTemplateParser implements TemplateParser {
         if (event.getEventClass() != null && !event.getEventClass().equals("")) {
             defaultEvent.setEventClass(event.getEventClass());
         }
-        if (event.getCreatedAt() != null && !event.getCreatedAt().equals("")) {
-            defaultEvent.setCreatedAt(event.getCreatedAt());
-        }
         if (event.getMessage() != null && !event.getMessage().equals("")) {
             defaultEvent.setMessage(event.getMessage());
         }
@@ -199,10 +196,10 @@ public class GenericTemplateParser implements TemplateParser {
                 defPropertyMap.put(key, propertyMap.get(key));
             });
         }
-        if (event.getSource() != null && event.getSource().equals("")) {
+        if (event.getSource() != null) {
             defaultEvent.setSource(event.getSource());
         }
-        if (event.getSender() != null && event.getSender().equals("")) {
+        if (event.getSender() != null) {
             defaultEvent.setSender(event.getSender());
         }
     }
