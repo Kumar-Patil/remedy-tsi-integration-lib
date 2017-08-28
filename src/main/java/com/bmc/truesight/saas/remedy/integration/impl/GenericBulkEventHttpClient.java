@@ -6,7 +6,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.util.List;
-import java.util.concurrent.Callable;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;

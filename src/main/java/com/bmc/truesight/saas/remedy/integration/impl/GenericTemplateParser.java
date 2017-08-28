@@ -132,6 +132,7 @@ public class GenericTemplateParser implements TemplateParser {
         if (config.getRemedyPort() != null) {
             defaultConfig.setRemedyPort(config.getRemedyPort());
         }
+
         if (config.getRemedyUserName() != null && !config.getRemedyUserName().equals("")) {
             defaultConfig.setRemedyUserName(config.getRemedyUserName());
         }
@@ -147,10 +148,13 @@ public class GenericTemplateParser implements TemplateParser {
         if (config.getEndDateTime() != null) {
             defaultConfig.setEndDateTime(config.getEndDateTime());
         }
-        //Disabled ability to override from the user 
-        /* if (config.getChunkSize() != null) {
+        //ability to override from the user 
+        if (config.getChunkSize() != null) {
             defaultConfig.setChunkSize(config.getChunkSize());
-        }*/
+        }
+        if (config.getThreadCount() != null) {
+            defaultConfig.setThreadCount(config.getThreadCount());
+        }
         if (config.getRetryConfig() != null) {
             defaultConfig.setRetryConfig(config.getRetryConfig());
         }
@@ -182,9 +186,6 @@ public class GenericTemplateParser implements TemplateParser {
         if (event.getEventClass() != null && !event.getEventClass().equals("")) {
             defaultEvent.setEventClass(event.getEventClass());
         }
-        if (event.getCreatedAt() != null && !event.getCreatedAt().equals("")) {
-            defaultEvent.setCreatedAt(event.getCreatedAt());
-        }
         if (event.getMessage() != null && !event.getMessage().equals("")) {
             defaultEvent.setMessage(event.getMessage());
         }
@@ -195,10 +196,10 @@ public class GenericTemplateParser implements TemplateParser {
                 defPropertyMap.put(key, propertyMap.get(key));
             });
         }
-        if (event.getSource() != null && event.getSource().equals("")) {
+        if (event.getSource() != null) {
             defaultEvent.setSource(event.getSource());
         }
-        if (event.getSender() != null && event.getSender().equals("")) {
+        if (event.getSender() != null) {
             defaultEvent.setSender(event.getSender());
         }
     }

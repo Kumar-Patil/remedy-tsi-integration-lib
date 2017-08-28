@@ -38,11 +38,6 @@ public class RemedyEntryEventAdapter {
         TSIEvent event = new TSIEvent(template.getEventDefinition());
 
         event.setTitle(getValueFromEntry(template, entry, event.getTitle()));
-        List<String> fPrintFields = new ArrayList<>();
-        event.getFingerprintFields().forEach(fingerPrint -> {
-            fPrintFields.add(getValueFromEntry(template, entry, fingerPrint));
-        });
-        event.setFingerprintFields(fPrintFields);
         Map<String, String> properties = event.getProperties();
         for (String key : properties.keySet()) {
             String val = getValueFromEntry(template, entry, properties.get(key));
@@ -54,14 +49,13 @@ public class RemedyEntryEventAdapter {
         }
         event.setSeverity(getValueFromEntry(template, entry, event.getSeverity()));
         event.setStatus(getValueFromEntry(template, entry, event.getStatus()));
-        event.setCreatedAt(resolveDate(getValueFromEntry(template, entry, event.getCreatedAt())));
         event.setEventClass(getValueFromEntry(template, entry, event.getEventClass()));
 
         // valiadting source
         EventSource source = event.getSource();
-        source.setName(getValueFromEntry(template, entry, source.getName()));
-        source.setType(getValueFromEntry(template, entry, source.getType()));
-        source.setRef(getValueFromEntry(template, entry, source.getRef()));
+        source.setName(getSourceNameFromEntry(template, entry, source.getName()));
+        source.setType(getSourceTypeFromEntry(template, entry, source.getType()));
+        source.setRef(getSourceNameFromEntry(template, entry, source.getRef()));
 
         EventSource sender = event.getSender();
         sender.setName(getValueFromEntry(template, entry, sender.getName()));
@@ -69,6 +63,22 @@ public class RemedyEntryEventAdapter {
         sender.setRef(getValueFromEntry(template, entry, sender.getRef()));
         return event;
 
+    }
+
+    private String getSourceNameFromEntry(Template template, Entry entry, String placeholder) {
+        if (placeholder.startsWith("@")) {
+            return getValueFromEntry(template, entry, placeholder);
+        } else {
+            return template.getConfig().getRemedyHostName();
+        }
+    }
+
+    private String getSourceTypeFromEntry(Template template, Entry entry, String placeholder) {
+        if (placeholder.startsWith("@")) {
+            return getValueFromEntry(template, entry, placeholder);
+        } else {
+            return "host";
+        }
     }
 
     private String getValueFromEntry(Template template, Entry entry, String placeholder) {

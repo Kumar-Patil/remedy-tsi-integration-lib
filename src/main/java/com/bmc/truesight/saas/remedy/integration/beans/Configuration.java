@@ -21,6 +21,7 @@ public class Configuration {
     private String tsiEventEndpoint;
     private String tsiApiToken;
     private Integer chunkSize;
+    private Integer threadCount;
     private List<Integer> conditionFields;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss z")
     private Date startDateTime;
@@ -132,6 +133,14 @@ public class Configuration {
 
     public void setQueryStatusList(List<Integer> queryStatusList) {
         this.queryStatusList = queryStatusList;
+    }
+
+    public Integer getThreadCount() {
+        return threadCount;
+    }
+
+    public void setThreadCount(Integer threadCount) {
+        this.threadCount = threadCount;
     }
 
 }

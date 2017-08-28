@@ -10,6 +10,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.bmc.truesight.saas.remedy.integration.ARServerForm;
 import com.bmc.truesight.saas.remedy.integration.TemplatePreParser;
 import com.bmc.truesight.saas.remedy.integration.beans.Configuration;
@@ -32,6 +35,8 @@ import com.fasterxml.jackson.databind.ObjectReader;
  *
  */
 public class GenericTemplatePreParser implements TemplatePreParser {
+
+    private static final Logger log = LoggerFactory.getLogger(GenericTemplatePreParser.class);
 
     private static final String INCIDENT_CONFIG_FILE = "incidentDefaultTemplate.json";
     private static final String CHANGE_CONFIG_FILE = "changeDefaultTemplate.json";
@@ -67,7 +72,12 @@ public class GenericTemplatePreParser implements TemplatePreParser {
 
                 JsonNode portNode = configuration.get(Constants.CONFIG_PORT_NODE_NAME);
                 if (portNode != null) {
-                    config.setRemedyPort(Integer.getInteger(portNode.asText()));
+                    try {
+                        Integer port = Integer.parseInt(portNode.asText());
+                        config.setRemedyPort(port);
+                    } catch (NumberFormatException ex) {
+                        log.debug("default port is not a valid port, skipping the port setting");
+                    }
                 }
 
                 JsonNode userNode = configuration.get(Constants.CONFIG_USERNAME_NODE_NAME);
@@ -91,7 +101,17 @@ public class GenericTemplatePreParser implements TemplatePreParser {
                 }
 
                 //Setting Config chunk size as constant
-                config.setChunkSize(Constants.CONFIG_CHUNK_SIZE);
+                JsonNode chunkNode = configuration.get(Constants.CONFIG_CHUNKSIZE_NODE_NAME);
+                if (chunkNode != null) {
+                    Integer chunk = Integer.parseInt(chunkNode.asText());
+                    config.setChunkSize(chunk);
+                }
+
+                JsonNode threadsNode = configuration.get(Constants.CONFIG_THREADS_NODE_NAME);
+                if (threadsNode != null) {
+                    Integer thread = Integer.parseInt(threadsNode.asText());
+                    config.setThreadCount(thread);
+                }
 
                 ObjectReader obReader = mapper.reader(new TypeReference<List<Integer>>() {
                 });
