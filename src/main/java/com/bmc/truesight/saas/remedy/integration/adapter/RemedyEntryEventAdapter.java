@@ -1,5 +1,6 @@
 package com.bmc.truesight.saas.remedy.integration.adapter;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -49,13 +50,14 @@ public class RemedyEntryEventAdapter {
         }
         event.setSeverity(getValueFromEntry(template, entry, event.getSeverity()));
         event.setStatus(getValueFromEntry(template, entry, event.getStatus()));
+        event.setCreatedAt(resolveDate(getValueFromEntry(template, entry, event.getCreatedAt())));
         event.setEventClass(getValueFromEntry(template, entry, event.getEventClass()));
 
         // valiadting source
         EventSource source = event.getSource();
-        source.setName(getSourceNameFromEntry(template, entry, source.getName()));
-        source.setType(getSourceTypeFromEntry(template, entry, source.getType()));
-        source.setRef(getSourceNameFromEntry(template, entry, source.getRef()));
+        source.setName(getValueFromEntry(template, entry, source.getName()));
+        source.setType(getValueFromEntry(template, entry, source.getType()));
+        source.setRef(getValueFromEntry(template, entry, source.getRef()));
 
         EventSource sender = event.getSender();
         sender.setName(getValueFromEntry(template, entry, sender.getName()));
@@ -63,22 +65,6 @@ public class RemedyEntryEventAdapter {
         sender.setRef(getValueFromEntry(template, entry, sender.getRef()));
         return event;
 
-    }
-
-    private String getSourceNameFromEntry(Template template, Entry entry, String placeholder) {
-        if (placeholder.startsWith("@")) {
-            return getValueFromEntry(template, entry, placeholder);
-        } else {
-            return template.getConfig().getRemedyHostName();
-        }
-    }
-
-    private String getSourceTypeFromEntry(Template template, Entry entry, String placeholder) {
-        if (placeholder.startsWith("@")) {
-            return getValueFromEntry(template, entry, placeholder);
-        } else {
-            return "host";
-        }
     }
 
     private String getValueFromEntry(Template template, Entry entry, String placeholder) {
@@ -94,6 +80,25 @@ public class RemedyEntryEventAdapter {
             } else {
                 return val;
             }
+        } else if (placeholder.startsWith("#")) {
+            Field fieldItem;
+            String val = "";
+            try {
+                fieldItem = template.getConfig().getClass().getDeclaredField(placeholder.substring(1));
+                if (fieldItem != null) {
+                    fieldItem.setAccessible(true);
+                    val = fieldItem.get(template.getConfig()).toString();
+                }
+            } catch (NoSuchFieldException e) {
+                log.error("There is no field \"{}\" in config. please review the mapping", placeholder.substring(1));
+            } catch (SecurityException e) {
+                log.error("Cannot acceess field \"{}\". {}", placeholder.substring(1), e.getMessage());
+            } catch (IllegalArgumentException e) {
+                log.error("Cannot get value for the field \"{}\". {}", placeholder.substring(1), e.getMessage());
+            } catch (IllegalAccessException e) {
+                log.error("Cannot get value for the field \"{}\". {}", placeholder.substring(1), e.getMessage());
+            }
+            return val;
         } else {
             return placeholder;
         }

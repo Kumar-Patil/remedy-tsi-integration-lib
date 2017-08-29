@@ -186,6 +186,9 @@ public class GenericTemplateParser implements TemplateParser {
         if (event.getEventClass() != null && !event.getEventClass().equals("")) {
             defaultEvent.setEventClass(event.getEventClass());
         }
+        if (event.getCreatedAt() != null && !event.getCreatedAt().equals("")) {
+            defaultEvent.setCreatedAt(event.getCreatedAt());
+        }
         if (event.getMessage() != null && !event.getMessage().equals("")) {
             defaultEvent.setMessage(event.getMessage());
         }

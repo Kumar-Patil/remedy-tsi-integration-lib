@@ -13,6 +13,7 @@ public class TSIEvent {
     private String status;
     private String message;
     private Map<String, String> properties;
+    private String createdAt;
     private String eventClass;
     private EventSource source;
     private EventSource sender;
@@ -21,6 +22,7 @@ public class TSIEvent {
         this.setTitle(payload.getTitle());
         this.setFingerprintFields(new ArrayList<String>(payload.fingerprintFields));
         this.setEventClass(payload.getEventClass());
+        this.setCreatedAt(payload.getCreatedAt());
         this.setProperties(new HashMap<String, String>(payload.getProperties()));
         this.setSender(new EventSource(payload.getSender()));
         this.setSource(new EventSource(payload.getSource()));
@@ -104,6 +106,14 @@ public class TSIEvent {
         this.message = message;
     }
 
+    public String getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(String createdAt) {
+        this.createdAt = createdAt;
+    }
+
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
@@ -119,6 +129,8 @@ public class TSIEvent {
         builder.append(message);
         builder.append(", \"properties\":");
         builder.append(properties);
+        builder.append(", \"createdAt\":");
+        builder.append(createdAt);
         builder.append(", \"eventClass\":");
         builder.append(eventClass);
         builder.append(", \"source\":");

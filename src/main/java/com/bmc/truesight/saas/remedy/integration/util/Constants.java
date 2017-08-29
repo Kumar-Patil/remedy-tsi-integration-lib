@@ -57,5 +57,7 @@ public interface Constants {
     String EVENT_FIELD_MISSING = "FingerPrintFields values are invalid, field \"{0}\" does not exist in Event fields. Accepted fields are {1}";
     String EVENT_PROPERTY_FIELD_MISSING = "FingerPrintFields values are invalid, field \"{0}\" does not exist in user fields (in properties of eventDefinition)";
     String APPLICATION_NAME_INVALID = "The application \"{0}\" is not valid , Only AlphaNumeric, Hyphen  and Underscore are allowed characters in the application name.";
+    String PAYLOAD_PLACEHOLDER_FIELD_MISSING = "The field \"{0}\" does not exist in Template Configuration, please review the mapping";
+    String APPLICATION_NAME_NOT_FOUND = "app_id field is missing from properties, please include one app_id field in properties";
 
 }
