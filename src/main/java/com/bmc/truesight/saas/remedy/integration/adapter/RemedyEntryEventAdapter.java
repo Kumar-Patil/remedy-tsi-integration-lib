@@ -1,19 +1,25 @@
 package com.bmc.truesight.saas.remedy.integration.adapter;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.bmc.arsys.api.AttachmentField;
+import com.bmc.arsys.api.DateTimeField;
 import com.bmc.arsys.api.Entry;
+import com.bmc.arsys.api.EnumItem;
+import com.bmc.arsys.api.SelectionField;
+import com.bmc.arsys.api.SelectionFieldLimit;
+import com.bmc.arsys.api.TimeOnlyField;
+import com.bmc.arsys.api.Timestamp;
 import com.bmc.arsys.api.Value;
 import com.bmc.truesight.saas.remedy.integration.beans.EventSource;
 import com.bmc.truesight.saas.remedy.integration.beans.FieldItem;
-import com.bmc.truesight.saas.remedy.integration.beans.Template;
 import com.bmc.truesight.saas.remedy.integration.beans.TSIEvent;
+import com.bmc.truesight.saas.remedy.integration.beans.Template;
 
 /**
  * This is an adapter which converts the remedy {@link Entry} items into
@@ -24,6 +30,12 @@ import com.bmc.truesight.saas.remedy.integration.beans.TSIEvent;
 public class RemedyEntryEventAdapter {
 
     private static final Logger log = LoggerFactory.getLogger(RemedyEntryEventAdapter.class);
+
+    private Map<Integer, com.bmc.arsys.api.Field> fieldIdFieldMap;
+
+    public RemedyEntryEventAdapter(Map<Integer, com.bmc.arsys.api.Field> fieldIdFieldMap) {
+        this.fieldIdFieldMap = fieldIdFieldMap;
+    }
 
     /**
      * This method is an adapter which converts a Remedy Entry into Event object
@@ -37,20 +49,14 @@ public class RemedyEntryEventAdapter {
     public TSIEvent convertEntryToEvent(Template template, Entry entry) {
 
         TSIEvent event = new TSIEvent(template.getEventDefinition());
-
         event.setTitle(getValueFromEntry(template, entry, event.getTitle()));
         Map<String, String> properties = event.getProperties();
         for (String key : properties.keySet()) {
-            String val = getValueFromEntry(template, entry, properties.get(key));
-            if (isItRemedyDate(val)) {
-                properties.put(key, resolveDate(getValueFromEntry(template, entry, properties.get(key))));
-            } else {
-                properties.put(key, getValueFromEntry(template, entry, properties.get(key)));
-            }
+            properties.put(key, getValueFromEntry(template, entry, properties.get(key)));
         }
         event.setSeverity(getValueFromEntry(template, entry, event.getSeverity()));
         event.setStatus(getValueFromEntry(template, entry, event.getStatus()));
-        event.setCreatedAt(resolveDate(getValueFromEntry(template, entry, event.getCreatedAt())));
+        event.setCreatedAt(getValueFromEntry(template, entry, event.getCreatedAt()));
         event.setEventClass(getValueFromEntry(template, entry, event.getEventClass()));
 
         // valiadting source
@@ -70,15 +76,56 @@ public class RemedyEntryEventAdapter {
     private String getValueFromEntry(Template template, Entry entry, String placeholder) {
         if (placeholder.startsWith("@")) {
             FieldItem fieldItem = template.getFieldItemMap().get(placeholder);
-            Value value = entry.get(fieldItem.getFieldId());
-            String val = "";
-            if (value != null && value.getValue() != null) {
-                val = value.getValue().toString();
-            }
-            if (fieldItem.getValueMap() != null && fieldItem.getValueMap().get(val) != null) {
-                return fieldItem.getValueMap().get(val);
+            com.bmc.arsys.api.Field field = fieldIdFieldMap.get(fieldItem.getFieldId());
+
+            if (field != null) {
+                Value value = entry.get(fieldItem.getFieldId());
+                if (field instanceof SelectionField) {
+                    SelectionFieldLimit sFieldLimit = (SelectionFieldLimit) field.getFieldLimit();
+                    String returnVal = "";
+                    if (value.getValue() != null) {
+                        if (sFieldLimit != null) {
+                            List<EnumItem> eItemList = sFieldLimit.getValues();
+                            for (EnumItem eItem : eItemList) {
+                                if (eItem.getEnumItemNumber() == Integer.parseInt(value.getValue().toString())) {
+                                    returnVal = eItem.getEnumItemName();
+                                    break;
+                                }
+                            }
+                        }
+                        if (fieldItem.getValueMap() != null && fieldItem.getValueMap().get(value.getValue().toString()) != null) {
+                            return fieldItem.getValueMap().get(value.getValue().toString());
+                        } else {
+                            return returnVal;
+                        }
+                    } else {
+                        return "";
+                    }
+                } else if (field instanceof DateTimeField || field instanceof TimeOnlyField) {
+                    Timestamp dateTimeTS = (Timestamp) value.getValue();
+                    if (dateTimeTS != null) {
+                        return Long.toString(dateTimeTS.getValue());
+                    } else {
+                        return "";
+                    }
+                } else if (field instanceof AttachmentField) {
+                    log.debug("FieldId,FieldName ({},{}) is an attachment field which is not expected in the mapping, ignoring the attachment field.", field.getFieldID(), field.getName());
+                    return "";
+                } else {
+                    String val = "";
+                    if (value != null && value.getValue() != null) {
+                        val = value.getValue().toString();
+                        if (fieldItem.getValueMap() != null && fieldItem.getValueMap().get(val) != null) {
+                            return fieldItem.getValueMap().get(val);
+                        } else {
+                            return val;
+                        }
+                    }
+                    return val;
+
+                }
             } else {
-                return val;
+                return "";
             }
         } else if (placeholder.startsWith("#")) {
             Field fieldItem;
@@ -104,35 +151,4 @@ public class RemedyEntryEventAdapter {
         }
     }
 
-    private String resolveDate(String dateString) {
-        Long longDate = null;
-        try {
-            if (dateString == null || dateString.trim().length() == 0) {
-                return "";
-            } else {
-                longDate = Long.parseLong(dateString.substring(11, 21));
-            }
-        } catch (NumberFormatException nfe) {
-            log.error("Remedy created date parsing failed, returning as blank value");
-            return "";
-        }
-        return longDate.toString();
-    }
-
-    private boolean isItRemedyDate(String val) {
-        boolean case1 = val.length() >= 22;
-        if (case1) {
-            boolean case2 = val.startsWith("[") && val.endsWith("]");
-            boolean case3 = val.substring(1, 10).equalsIgnoreCase("Timestamp");
-            boolean case4 = false;
-            try {
-                Long.parseLong(val.substring(11, 21));
-                case4 = true;
-            } catch (NumberFormatException nfe) {
-                case4 = false;
-            }
-            return case1 && case2 && case3 && case4;
-        }
-        return case1;
-    }
 }
