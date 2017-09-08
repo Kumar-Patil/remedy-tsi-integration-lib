@@ -1,8 +1,10 @@
 package com.bmc.truesight.saas.remedy.integration.impl;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -14,6 +16,7 @@ import com.bmc.arsys.api.ARServerUser;
 import com.bmc.arsys.api.ArithmeticOrRelationalOperand;
 import com.bmc.arsys.api.DataType;
 import com.bmc.arsys.api.Entry;
+import com.bmc.arsys.api.Field;
 import com.bmc.arsys.api.OutputInteger;
 import com.bmc.arsys.api.QualifierInfo;
 import com.bmc.arsys.api.RelationalOperationInfo;
@@ -76,13 +79,14 @@ public class GenericRemedyReader implements RemedyReader {
         template.getFieldItemMap().values().forEach(fieldItem -> {
             fieldsList.add(fieldItem.getFieldId());
         });
-
+        log.debug("FieldsList populated with the field ids, count is {}", fieldsList.size());
         int[] queryFieldsList = new int[fieldsList.size()];
         int index = 0;
         for (Integer i : fieldsList) {
             queryFieldsList[index++] = i;
         }
         //Qualifier Created for Date condition fields, for example if closed date is in startDate & endDate 
+        log.debug("Started making qualifier for API call to get the remedy information");
         QualifierInfo qualInfoF = null;
         for (int fieldId : template.getConfig().getConditionFields()) {
             QualifierInfo qualInfo1 = buildFieldValueQualification(fieldId,
@@ -129,7 +133,7 @@ public class GenericRemedyReader implements RemedyReader {
             qualInfoF = new QualifierInfo(QualifierInfo.AR_COND_OP_AND, qualInfoF, qualInfoStatusF);
 
         }
-
+        log.debug("Qualifier making completed, about to start making the call");
         List<SortInfo> sortOrder = new ArrayList<SortInfo>();
         List<Entry> entryList = new ArrayList<>();
         boolean isSuccessful = false;
@@ -161,6 +165,9 @@ public class GenericRemedyReader implements RemedyReader {
         List<TSIEvent> payloadList = new ArrayList<TSIEvent>();
         List<TSIEvent> invalidPayloadList = new ArrayList<TSIEvent>();
         int largeEventCount = 0;
+        if (adapter == null) {
+            throw new RemedyReadFailedException("Adapter instance is null, it should not be null");
+        }
         for (Entry entry : entryList) {
             TSIEvent event = adapter.convertEntryToEvent(template, entry);
             if (StringUtil.isObjectJsonSizeAllowed(event)) {
@@ -217,6 +224,27 @@ public class GenericRemedyReader implements RemedyReader {
     public void logout(ARServerUser arServerContext) {
         arServerContext.logout();
         log.info("Logout successful from remedy server");
+    }
+
+    @Override
+    public Map<Integer, Field> getFieldsMap(ARServerUser user, ARServerForm form) throws RemedyReadFailedException {
+        Map<Integer, Field> fieldMap = new HashMap<>();
+        log.debug("Getting field Item map ");
+        List<Field> fieldList = null;
+        try {
+            fieldList = user.getListFieldObjects(form.toString());
+        } catch (ARException e1) {
+            throw new RemedyReadFailedException("List of fields could not be retrieved from AR Server." + e1.getMessage());
+        }
+        fieldList.forEach(fieldItem -> {
+            try {
+                fieldMap.put(fieldItem.getFieldID(), fieldItem);
+            } catch (Exception e) {
+                log.error("Creating field Map resulted into error, {}", e.getMessage());
+            }
+        });
+        log.debug(" FieldMap has total {} entries", fieldMap.size());
+        return fieldMap;
     }
 
 }

@@ -1,12 +1,16 @@
 package com.bmc.truesight.saas.remedy.integration.impl;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.bmc.arsys.api.Field;
 import com.bmc.truesight.saas.remedy.integration.TemplateValidator;
 import com.bmc.truesight.saas.remedy.integration.beans.Configuration;
 import com.bmc.truesight.saas.remedy.integration.beans.EventSource;
@@ -27,11 +31,17 @@ public class GenericTemplateValidator implements TemplateValidator {
 
     private static final Logger log = LoggerFactory.getLogger(GenericTemplateValidator.class);
 
+    private Map<Integer, Field> fieldmap;
+
+    public GenericTemplateValidator(Map<Integer, Field> fieldmap) {
+        this.fieldmap = fieldmap;
+    }
+
     @Override
     public boolean validate(Template template) throws ValidationException {
         Configuration config = template.getConfig();
         TSIEvent payload = template.getEventDefinition();
-        Map<String, FieldItem> fieldItemMap = template.getFieldItemMap();
+        Map<String, FieldItem> baseFieldItemMap = template.getFieldItemMap();
 
         if (config.getRemedyHostName().isEmpty()
                 || config.getRemedyUserName().isEmpty()
@@ -50,6 +60,24 @@ public class GenericTemplateValidator implements TemplateValidator {
         }
         if (config.getEndDateTime().after(new Date())) {
             throw new ValidationException(StringUtil.format(Constants.DATERANGE_VALIDATION_FAILED, new Object[]{}));
+        }
+
+        List<String> invalidDefinitionList = new ArrayList<>();
+        Map<Integer, Field> usableFieldMap = new HashMap<>();
+        Map<String, FieldItem> fieldItemMap = new HashMap<>();
+        baseFieldItemMap.keySet().forEach(key -> {
+            Field field = fieldmap.get(baseFieldItemMap.get(key).getFieldId());
+            if (field == null) {
+                invalidDefinitionList.add(key);
+            } else {
+                fieldItemMap.put(key, baseFieldItemMap.get(key));
+                usableFieldMap.put(field.getFieldID(), field);
+            }
+        });
+        fieldmap.clear();
+        fieldmap.putAll(usableFieldMap);
+        if (invalidDefinitionList.size() > 0) {
+            log.error("The following field definitions are dropped because they have invalid fieldId. " + invalidDefinitionList.toString());
         }
         // validate payload configuration
         if (payload.getTitle() != null && payload.getTitle().startsWith("@") && !fieldItemMap.containsKey(payload.getTitle())) {
@@ -76,12 +104,7 @@ public class GenericTemplateValidator implements TemplateValidator {
         if (properties.keySet().size() > Constants.MAX_PROPERTY_FIELD_SUPPORTED) {
             throw new ValidationException(StringUtil.format(Constants.PROPERTY_FIELD_COUNT_EXCEEDS, new Object[]{properties.keySet().size(), Constants.MAX_PROPERTY_FIELD_SUPPORTED}));
         }
-        if (properties.containsKey("app_id")) {
-            String appId = properties.get("app_id");
-            if (!isValidAppId(appId)) {
-                throw new ValidationException(StringUtil.format(Constants.APPLICATION_NAME_INVALID, new Object[]{appId}));
-            }
-        } else {
+        if (!properties.containsKey("app_id")) {
             throw new ValidationException(StringUtil.format(Constants.APPLICATION_NAME_NOT_FOUND, new Object[0]));
         }
         for (String key : properties.keySet()) {
@@ -176,16 +199,6 @@ public class GenericTemplateValidator implements TemplateValidator {
         if (sender.getRef() != null && sender.getRef().startsWith("#")) {
             validateConfigField(config, sender.getRef().substring(1));
         }
-
-        return true;
-    }
-
-    private boolean isValidAppId(String inputString) {
-        for (char c : inputString.toCharArray()) {
-            if (Constants.SPECIAL_CHARACTOR.indexOf(c, 0) >= 0) {
-                return false;
-            }
-        };
         return true;
     }
 

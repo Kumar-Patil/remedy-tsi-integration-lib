@@ -1,9 +1,11 @@
 package com.bmc.truesight.saas.remedy.integration;
 
 import java.util.List;
+import java.util.Map;
 
 import com.bmc.arsys.api.ARServerUser;
 import com.bmc.arsys.api.Entry;
+import com.bmc.arsys.api.Field;
 import com.bmc.arsys.api.OutputInteger;
 import com.bmc.truesight.saas.remedy.integration.adapter.RemedyEntryEventAdapter;
 import com.bmc.truesight.saas.remedy.integration.beans.Template;
@@ -91,5 +93,15 @@ public interface RemedyReader {
      * @param arServerContext {@link ARServerUser} instance.
      */
     void logout(ARServerUser arServerContext);
+
+    /**
+     * This method gets the fieldId Field map for {@link ARServerUser} from the
+     * ARServer.
+     *
+     * @param user {@link ARServerUser} instance.
+     * @param form ARServerForm instance
+     * @throws RemedyReadFailedException
+     */
+    Map<Integer, Field> getFieldsMap(ARServerUser user, ARServerForm form) throws RemedyReadFailedException;
 
 }
