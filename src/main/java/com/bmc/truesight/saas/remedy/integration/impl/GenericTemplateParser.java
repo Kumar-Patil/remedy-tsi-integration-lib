@@ -2,6 +2,7 @@ package com.bmc.truesight.saas.remedy.integration.impl;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -18,6 +19,7 @@ import com.bmc.truesight.saas.remedy.integration.beans.Template;
 import com.bmc.truesight.saas.remedy.integration.exception.ParsingException;
 import com.bmc.truesight.saas.remedy.integration.util.Constants;
 import com.bmc.truesight.saas.remedy.integration.util.StringUtil;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -101,22 +103,20 @@ public class GenericTemplateParser implements TemplateParser {
             log.info("eventDefinition field not found, falling back to default values while parsing");
         }
 
-        // Iterate over the properties and if it starts with '@', put it to
-        // itemValueMap
-        Iterator<Entry<String, JsonNode>> nodes = rootNode.fields();
-        Map<String, FieldItem> fieldItemMap = defaultTemplate.getFieldItemMap();
-        while (nodes.hasNext()) {
-            Map.Entry<String, JsonNode> entry = (Map.Entry<String, JsonNode>) nodes.next();
-            if (entry.getKey().startsWith("@")) {
-                try {
-                    String placeholderNode = mapper.writeValueAsString(entry.getValue());
-                    FieldItem placeholderDefinition = mapper.readValue(placeholderNode, FieldItem.class);
-                    fieldItemMap.put(entry.getKey(), placeholderDefinition);
-                } catch (IOException e) {
-                    throw new ParsingException(
-                            StringUtil.format(Constants.PLACEHOLDER_PROPERTY_NOT_CORRECT, new Object[]{entry.getKey()}));
-                }
+        // Mapping of fieldDefinitionMap
+        Map<String, FieldItem> defaultFieldDefinitionMap = defaultTemplate.getFieldDefinitionMap();
+        try {
+            JsonNode fieldDefinitionNode = rootNode.get(Constants.FIELDDEFINITIONMAP_NODE_NAME);
+            String fieldDefinitionString = mapper.writeValueAsString(fieldDefinitionNode);
+            TypeReference<HashMap<String, FieldItem>> typeRef = new TypeReference<HashMap<String, FieldItem>>() {
+            };
+            Map<String, FieldItem> fieldDefinitionMap = mapper.readValue(fieldDefinitionString, typeRef);
+            if (fieldDefinitionMap != null) {
+                defaultFieldDefinitionMap.putAll(fieldDefinitionMap);
             }
+            // defaultTemplate.setFieldDefinitionMap(defaultFieldDefinitionMap);
+        } catch (IOException e) {
+            throw new ParsingException(StringUtil.format(Constants.PAYLOAD_PROPERTY_NOT_FOUND, new Object[]{}));
         }
 
         return defaultTemplate;
@@ -192,18 +192,24 @@ public class GenericTemplateParser implements TemplateParser {
         if (event.getMessage() != null && !event.getMessage().equals("")) {
             defaultEvent.setMessage(event.getMessage());
         }
+
+        //Overrides the default properties completely
         if (event.getProperties() != null && event.getProperties().size() > 0) {
             Map<String, String> defPropertyMap = defaultEvent.getProperties();
-            Map<String, String> propertyMap = event.getProperties();
-            event.getProperties().keySet().forEach(key -> {
-                defPropertyMap.put(key, propertyMap.get(key));
-            });
+            if (event.getProperties().size() == 1 && event.getProperties().containsKey(Constants.PROPERTY_APP_ID)) {
+                //it means there is no property mapping only app_id is mapped
+                //So only App_id is overridden and not other properties
+                defPropertyMap.put(Constants.PROPERTY_APP_ID, event.getProperties().get(Constants.PROPERTY_APP_ID));
+            } else {
+                defPropertyMap.clear();
+                defPropertyMap.putAll(event.getProperties());
+            }
         }
         if (event.getSource() != null) {
             defaultEvent.setSource(event.getSource());
         }
-        if (event.getSender() != null) {
+        /* if (event.getSender() != null) {
             defaultEvent.setSender(event.getSender());
-        }
+        }*/
     }
 }

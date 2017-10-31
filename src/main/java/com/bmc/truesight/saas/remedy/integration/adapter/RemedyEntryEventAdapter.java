@@ -1,6 +1,7 @@
 package com.bmc.truesight.saas.remedy.integration.adapter;
 
 import java.lang.reflect.Field;
+import java.util.Currency;
 import java.util.List;
 import java.util.Map;
 
@@ -8,9 +9,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.bmc.arsys.api.AttachmentField;
+import com.bmc.arsys.api.CurrencyField;
 import com.bmc.arsys.api.DateTimeField;
+import com.bmc.arsys.api.DecimalField;
 import com.bmc.arsys.api.Entry;
 import com.bmc.arsys.api.EnumItem;
+import com.bmc.arsys.api.IntegerField;
 import com.bmc.arsys.api.SelectionField;
 import com.bmc.arsys.api.SelectionFieldLimit;
 import com.bmc.arsys.api.TimeOnlyField;
@@ -20,6 +24,7 @@ import com.bmc.truesight.saas.remedy.integration.beans.EventSource;
 import com.bmc.truesight.saas.remedy.integration.beans.FieldItem;
 import com.bmc.truesight.saas.remedy.integration.beans.TSIEvent;
 import com.bmc.truesight.saas.remedy.integration.beans.Template;
+import com.bmc.truesight.saas.remedy.integration.util.Constants;
 
 /**
  * This is an adapter which converts the remedy {@link Entry} items into
@@ -65,24 +70,24 @@ public class RemedyEntryEventAdapter {
         source.setType(getValueFromEntry(template, entry, source.getType()));
         source.setRef(getValueFromEntry(template, entry, source.getRef()));
 
-        EventSource sender = event.getSender();
+        /*EventSource sender = event.getSender();
         sender.setName(getValueFromEntry(template, entry, sender.getName()));
         sender.setType(getValueFromEntry(template, entry, sender.getType()));
-        sender.setRef(getValueFromEntry(template, entry, sender.getRef()));
+        sender.setRef(getValueFromEntry(template, entry, sender.getRef()));*/
         return event;
 
     }
 
     private String getValueFromEntry(Template template, Entry entry, String placeholder) {
         if (placeholder.startsWith("@")) {
-            FieldItem fieldItem = template.getFieldItemMap().get(placeholder);
+            FieldItem fieldItem = template.getFieldDefinitionMap().get(placeholder);
             com.bmc.arsys.api.Field field = fieldIdFieldMap.get(fieldItem.getFieldId());
 
             if (field != null) {
                 Value value = entry.get(fieldItem.getFieldId());
                 if (field instanceof SelectionField) {
                     SelectionFieldLimit sFieldLimit = (SelectionFieldLimit) field.getFieldLimit();
-                    String returnVal = "";
+                    String returnVal = Constants.NONE_VALUE;
                     if (value.getValue() != null) {
                         if (sFieldLimit != null) {
                             List<EnumItem> eItemList = sFieldLimit.getValues();
@@ -99,20 +104,27 @@ public class RemedyEntryEventAdapter {
                             return returnVal;
                         }
                     } else {
-                        return "";
+                        return Constants.NONE_VALUE;
                     }
                 } else if (field instanceof DateTimeField || field instanceof TimeOnlyField) {
                     Timestamp dateTimeTS = (Timestamp) value.getValue();
                     if (dateTimeTS != null) {
                         return Long.toString(dateTimeTS.getValue());
                     } else {
-                        return "";
+                        return Constants.NONE_VALUE;
                     }
                 } else if (field instanceof AttachmentField) {
                     log.debug("FieldId,FieldName ({},{}) is an attachment field which is not expected in the mapping, ignoring the attachment field.", field.getFieldID(), field.getName());
-                    return "";
-                } else {
+                    return Constants.NONE_VALUE;
+                } else if (field instanceof IntegerField || field instanceof CurrencyField || field instanceof DecimalField) {
                     String val = "";
+                    if (value != null && value.getValue() != null) {
+                        val = value.getValue().toString();
+                    }
+                    return val;
+
+                } else {
+                    String val = Constants.NONE_VALUE;
                     if (value != null && value.getValue() != null) {
                         val = value.getValue().toString();
                         if (fieldItem.getValueMap() != null && fieldItem.getValueMap().get(val) != null) {
@@ -122,14 +134,13 @@ public class RemedyEntryEventAdapter {
                         }
                     }
                     return val;
-
                 }
             } else {
-                return "";
+                return Constants.NONE_VALUE;
             }
         } else if (placeholder.startsWith("#")) {
             Field fieldItem;
-            String val = "";
+            String val = Constants.NONE_VALUE;
             try {
                 fieldItem = template.getConfig().getClass().getDeclaredField(placeholder.substring(1));
                 if (fieldItem != null) {

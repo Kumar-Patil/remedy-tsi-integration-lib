@@ -1,5 +1,6 @@
 package com.bmc.truesight.saas.remedy.integration.util;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -20,6 +21,16 @@ public interface Constants {
     String CONFIG_RETRY_NODE_NAME = "retryConfig";
     String CONFIG_WAITSMS_NODE_NAME = "waitMsBeforeRetry";
     String EVENTDEF_NODE_NAME = "eventDefinition";
+    String FIELDDEFINITIONMAP_NODE_NAME = "fieldDefinitionMap";
+    String PROPERTY_APP_ID = "app_id";
+    String PROPERTY_INCIDENT_NO = "Incident_Number";
+    String PROPERTY_CHANGE_ID = "Change_ID";
+    String PROPERTY_LAST_MODIFIED_DATE = "Last_Modified_Date";
+    String NONE_VALUE = "None";
+    String INCIDENT_TEMPLATE_PATH = File.separator + "incidentTemplate.json";
+    String CHANGE_TEMPLATE_PATH = File.separator + "changeTemplate.json";
+    String REGKEY_FILE_NAME = "RegKey.reg";
+
     List<String> FINGERPRINT_EVENT_FIELDS = new ArrayList<String>() {
         {
             add("source.name");
@@ -59,5 +70,6 @@ public interface Constants {
     String APPLICATION_NAME_INVALID = "The application \"{0}\" is not valid , Only AlphaNumeric, Hyphen  and Underscore are allowed characters in the application name.";
     String PAYLOAD_PLACEHOLDER_FIELD_MISSING = "The field \"{0}\" does not exist in Template Configuration, please review the mapping";
     String APPLICATION_NAME_NOT_FOUND = "app_id field is missing from properties, please include one app_id field in properties";
+    String LAST_MODIFIED_DATE_NOT_FOUND = "Last_Modified_Date field is missing from properties, please include this field in properties";
 
 }

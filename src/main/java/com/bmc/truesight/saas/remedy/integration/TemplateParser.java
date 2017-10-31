@@ -29,6 +29,7 @@ public interface TemplateParser {
      * This method reads and parse from a JSON file. This function is used in
      * case template JSON is available in json file
      *
+     * @param defaultTemplate Instance of DefaultTemplate
      * @param fileName Template JSON fileName
      * @return {@link Template}
      * @throws ParsingException Throws this exception if JSON parsing is not
