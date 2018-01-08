@@ -3,6 +3,7 @@ package com.bmc.truesight.saas.remedy.integration.impl;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -27,6 +28,7 @@ import com.bmc.arsys.api.Value;
 import com.bmc.truesight.saas.remedy.integration.ARServerForm;
 import com.bmc.truesight.saas.remedy.integration.RemedyReader;
 import com.bmc.truesight.saas.remedy.integration.adapter.RemedyEntryEventAdapter;
+import com.bmc.truesight.saas.remedy.integration.beans.InvalidEvent;
 import com.bmc.truesight.saas.remedy.integration.beans.RemedyEventResponse;
 import com.bmc.truesight.saas.remedy.integration.beans.TSIEvent;
 import com.bmc.truesight.saas.remedy.integration.beans.Template;
@@ -76,17 +78,22 @@ public class GenericRemedyReader implements RemedyReader {
         RemedyEventResponse response = new RemedyEventResponse();
         //keeping as set to avoid duplicates
         Set<Integer> fieldsList = new HashSet<>();
-        template.getFieldItemMap().values().forEach(fieldItem -> {
-            fieldsList.add(fieldItem.getFieldId());
+        log.debug("Reading Remedy tickets,total no of FieldDefinitionMap elements is =>{}", template.getFieldDefinitionMap().size());
+        template.getEventDefinition().getProperties().entrySet().forEach(propEntry -> {
+            if (propEntry.getValue().startsWith("@")) {
+                fieldsList.add(template.getFieldDefinitionMap().get(propEntry.getValue()).getFieldId());
+            }
         });
-        log.debug("FieldsList populated with the field ids, count is {}", fieldsList.size());
+
         int[] queryFieldsList = new int[fieldsList.size()];
         int index = 0;
         for (Integer i : fieldsList) {
             queryFieldsList[index++] = i;
         }
+        log.debug("building parameters to make the call __________________________");
+        log.debug("field ids  -> Size : {}, values: {}", queryFieldsList.length, fieldsList.size());
         //Qualifier Created for Date condition fields, for example if closed date is in startDate & endDate 
-        log.debug("Started making qualifier for API call to get the remedy information");
+        log.debug("Bulding Qualifier to make the call __________________________ ");
         QualifierInfo qualInfoF = null;
         for (int fieldId : template.getConfig().getConditionFields()) {
             QualifierInfo qualInfo1 = buildFieldValueQualification(fieldId,
@@ -103,7 +110,7 @@ public class GenericRemedyReader implements RemedyReader {
                 qualInfoF = qualInfo;
             }
         }
-
+        log.debug("Condition 1: Values of fields {} should fall in date {}, {}", template.getConfig().getConditionFields(), template.getConfig().getStartDateTime(), template.getConfig().getEndDateTime());
         //Status Query list
         List<Integer> queryStatusList = template.getConfig().getQueryStatusList();
         //If there is no statusQueryList Configured then create qualifier for Closed status
@@ -112,11 +119,14 @@ public class GenericRemedyReader implements RemedyReader {
             if (formName == ARServerForm.INCIDENT_FORM) {
                 qualInfoStatus = buildFieldValueQualification(STATUS_FIELD_ID,
                         new Value(INCIDENT_STATUS_CLOSED, DataType.INTEGER), RelationalOperationInfo.AR_REL_OP_EQUAL);
+                log.debug("Condition 2: Status values -> {}", INCIDENT_STATUS_CLOSED);
             } else if (formName == ARServerForm.CHANGE_FORM) {
                 qualInfoStatus = buildFieldValueQualification(STATUS_FIELD_ID,
                         new Value(CHANGE_STATUS_CLOSED, DataType.INTEGER), RelationalOperationInfo.AR_REL_OP_EQUAL);
+                log.debug("Condition 2: Status values -> {}", CHANGE_STATUS_CLOSED);
             }
             qualInfoF = new QualifierInfo(QualifierInfo.AR_COND_OP_AND, qualInfoF, qualInfoStatus);
+
         } else {
             //else statusQueryList Configured, created Qualifier accordingly
             QualifierInfo qualInfoStatusF = null;
@@ -131,7 +141,7 @@ public class GenericRemedyReader implements RemedyReader {
                 }
             }
             qualInfoF = new QualifierInfo(QualifierInfo.AR_COND_OP_AND, qualInfoF, qualInfoStatusF);
-
+            log.debug("Condition 2: Status values -> {}", queryStatusList);
         }
         log.debug("Qualifier making completed, about to start making the call");
         List<SortInfo> sortOrder = new ArrayList<SortInfo>();
@@ -147,42 +157,113 @@ public class GenericRemedyReader implements RemedyReader {
             } catch (ARException e) {
                 if (retryCount < template.getConfig().getRetryConfig()) {
                     retryCount++;
-                    log.error("Reading  {} tickets from {} resulted into exception[{}], Re-trying for {} time", new Object[]{chunkSize, startFrom, e.getMessage(), retryCount});
+                    log.debug("Reading  {} tickets from {} resulted into exception[{}], Re-trying for {} time", new Object[]{chunkSize, startFrom, e.getMessage(), retryCount});
                     try {
-                        log.error("Waiting for {} sec before trying again ......", (template.getConfig().getWaitMsBeforeRetry() / 1000));
+                        log.debug("Waiting for {} sec before trying again ......", (template.getConfig().getWaitMsBeforeRetry() / 1000));
                         Thread.sleep(template.getConfig().getWaitMsBeforeRetry());
                     } catch (InterruptedException e1) {
                     }
 
                     continue;
                 } else {
-                    log.error("Skipping the read process, Reading tickets Failed for starting : {}, chunk size {} even after retrying for {} times", new Object[]{startFrom, chunkSize, retryCount});
-                    throw new RemedyReadFailedException("Skipping the read process, Reading tickets Failed for starting : " + startFrom + ", chunk size " + chunkSize + " even after retrying for " + retryCount + " times");
+                    log.debug("Skipping the read process, Reading tickets Failed for starting : {}, chunk size {} even after retrying for {} times", new Object[]{startFrom, chunkSize, retryCount});
+                    throw new RemedyReadFailedException(e.getMessage()+", Skipping the read process, Reading tickets Failed for starting : " + startFrom + ", chunk size " + chunkSize + " even after retrying for " + retryCount + " times");
 
                 }
             }
         }
         List<TSIEvent> payloadList = new ArrayList<TSIEvent>();
-        List<TSIEvent> invalidPayloadList = new ArrayList<TSIEvent>();
+        List<InvalidEvent> invalidEventList = new ArrayList<InvalidEvent>();
         int largeEventCount = 0;
         if (adapter == null) {
             throw new RemedyReadFailedException("Adapter instance is null, it should not be null");
         }
         for (Entry entry : entryList) {
             TSIEvent event = adapter.convertEntryToEvent(template, entry);
-            if (StringUtil.isObjectJsonSizeAllowed(event)) {
+            InvalidEvent invalidEvent = new InvalidEvent(entry.getEntryId());
+            if (StringUtil.isObjectJsonSizeAllowed(event, invalidEvent)) {
                 payloadList.add(event);
             } else {
-                invalidPayloadList.add(event);
+                invalidEventList.add(invalidEvent);
                 largeEventCount++;
             }
         }
         if (largeEventCount > 0) {
-            log.error("{} event(s) dropped before sending to TSI, size of event is greater than allowed limit({} Bytes). Please review the field mapping", new Object[]{largeEventCount, Constants.MAX_EVENT_SIZE_ALLOWED_BYTES});
+            log.debug("{} event(s) dropped before sending to TSI, size of event is greater than allowed limit({} Bytes). Please review the field mapping", new Object[]{largeEventCount, Constants.MAX_EVENT_SIZE_ALLOWED_BYTES});
         }
         response.setValidEventList(payloadList);
-        response.setLargeInvalidEventCount(largeEventCount);
-        response.setInvalidEventList(invalidPayloadList);
+        response.setInvalidEventList(invalidEventList);
+
+        return response;
+    }
+
+    @Override
+    public RemedyEventResponse readRemedyTicketsWithId(ARServerUser arServerContext, ARServerForm formName, Template template, List<String> ids, RemedyEntryEventAdapter adapter) throws RemedyReadFailedException {
+
+        RemedyEventResponse response = new RemedyEventResponse();
+        //keeping as set to avoid duplicates
+        Set<Integer> fieldsList = new HashSet<>();
+        log.debug("template has {} FieldDefinitionMap", template.getFieldDefinitionMap().size());
+        template.getEventDefinition().getProperties().entrySet().forEach(propEntry -> {
+            if (propEntry.getValue().startsWith("@")) {
+                fieldsList.add(template.getFieldDefinitionMap().get(propEntry.getValue()).getFieldId());
+            }
+        });
+
+        log.debug("FieldsList populated with the field ids, count is {}", fieldsList.size());
+        int[] queryFieldsList = new int[fieldsList.size()];
+        int index = 0;
+        for (Integer i : fieldsList) {
+            queryFieldsList[index++] = i;
+        }
+        log.debug("Entry Ids -> {}", ids);
+
+        List<Entry> entryList = new ArrayList<>();
+        boolean isSuccessful = false;
+        int retryCount = 0;
+        while (!isSuccessful && retryCount <= template.getConfig().getRetryConfig()) {
+            try {
+                entryList = arServerContext.getListEntryObjects(formName.toString(), ids, queryFieldsList);
+                isSuccessful = true;
+                log.debug("Recieved {} tickets  for {} entry ids  ", new Object[]{entryList.size(), ids.size()});
+            } catch (ARException e) {
+                if (retryCount < template.getConfig().getRetryConfig()) {
+                    retryCount++;
+                    log.debug("Reading  {} tickets for {} entry ids  resulted into exception[{}], Re-trying for {} time", entryList.size(), ids.size(), retryCount);
+                    try {
+                        log.debug("Waiting for {} sec before trying again ......", (template.getConfig().getWaitMsBeforeRetry() / 1000));
+                        Thread.sleep(template.getConfig().getWaitMsBeforeRetry());
+                    } catch (InterruptedException e1) {
+                        e1.printStackTrace();
+                    }
+                    continue;
+                } else {
+                    log.debug("Skipping the read process, Reading tickets Failed for {} entries even after retrying for {} times", ids.size(), retryCount);
+                    throw new RemedyReadFailedException(e.getMessage()+", Skipping the read process, Reading tickets Failed for  " + ids.size() + " entries even after retrying for " + retryCount + " times");
+                }
+            }
+        }
+        List<TSIEvent> payloadList = new ArrayList<TSIEvent>();
+        List<InvalidEvent> invalidEventList = new ArrayList<InvalidEvent>();
+        int largeEventCount = 0;
+        if (adapter == null) {
+            throw new RemedyReadFailedException("Adapter instance is null, it should not be null");
+        }
+        for (Entry entry : entryList) {
+            TSIEvent event = adapter.convertEntryToEvent(template, entry);
+            InvalidEvent invalidEvent = new InvalidEvent(entry.getEntryId());
+            if (StringUtil.isObjectJsonSizeAllowed(event, invalidEvent)) {
+                payloadList.add(event);
+            } else {
+                invalidEventList.add(invalidEvent);
+                largeEventCount++;
+            }
+        }
+        if (largeEventCount > 0) {
+            log.debug("{} event(s) dropped before sending to TSI, size of event is greater than allowed limit({} Bytes). Please review the field mapping", new Object[]{largeEventCount, Constants.MAX_EVENT_SIZE_ALLOWED_BYTES});
+        }
+        response.setValidEventList(payloadList);
+        response.setInvalidEventList(invalidEventList);
         return response;
     }
 

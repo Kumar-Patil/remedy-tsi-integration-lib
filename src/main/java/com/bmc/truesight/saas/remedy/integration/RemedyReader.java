@@ -100,8 +100,23 @@ public interface RemedyReader {
      *
      * @param user {@link ARServerUser} instance.
      * @param form ARServerForm instance
-     * @throws RemedyReadFailedException
+     * @throws RemedyReadFailedException throws exception
+     * @return Map Returns FieldId field Map 
      */
     Map<Integer, Field> getFieldsMap(ARServerUser user, ARServerForm form) throws RemedyReadFailedException;
+
+    /**
+     * This method gets List of valid/invalid Events for the list of entry Ids
+     *
+     * @param arServerContext ARServerUser instance
+     * @param formName Incident or change formName
+     * @param template template object
+     * @param ids list of Entry ids
+     * @param adapter RemedyEntryEventAdapter
+     * @return RemedyEventResponse Returns the result
+     * @throws RemedyReadFailedException exception
+     */
+    RemedyEventResponse readRemedyTicketsWithId(ARServerUser arServerContext, ARServerForm formName, Template template,
+            List<String> ids, RemedyEntryEventAdapter adapter) throws RemedyReadFailedException;
 
 }

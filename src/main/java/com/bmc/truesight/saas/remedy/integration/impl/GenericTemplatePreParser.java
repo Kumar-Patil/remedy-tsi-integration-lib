@@ -152,23 +152,18 @@ public class GenericTemplatePreParser implements TemplatePreParser {
             throw new ParsingException(StringUtil.format(Constants.PAYLOAD_PROPERTY_NOT_FOUND, new Object[]{}));
         }
 
-        // Iterate over the properties and if it starts with '@', put it to
-        // itemValueMap
-        Iterator<Entry<String, JsonNode>> nodes = rootNode.fields();
-        Map<String, FieldItem> fieldItemMap = new HashMap<String, FieldItem>();
-        while (nodes.hasNext()) {
-            Map.Entry<String, JsonNode> entry = (Map.Entry<String, JsonNode>) nodes.next();
-            if (entry.getKey().startsWith(Constants.PLACEHOLDER_START_TOKEN)) {
-                try {
-                    String placeholderNode = mapper.writeValueAsString(entry.getValue());
-                    FieldItem placeholderDefinition = mapper.readValue(placeholderNode, FieldItem.class);
-                    fieldItemMap.put(entry.getKey(), placeholderDefinition);
-                } catch (IOException e) {
-                    throw new ParsingException(StringUtil.format(Constants.PAYLOAD_PROPERTY_NOT_FOUND, new Object[]{entry.getKey()}));
-                }
-            }
+        // Mapping of fieldDefinitionMap
+        try {
+            JsonNode fieldDefinitionNode = rootNode.get(Constants.FIELDDEFINITIONMAP_NODE_NAME);
+            String fieldDefinitionString = mapper.writeValueAsString(fieldDefinitionNode);
+            TypeReference<HashMap<String, FieldItem>> typeRef = new TypeReference<HashMap<String, FieldItem>>() {
+            };
+            Map<String, FieldItem> fieldDefinitionMap = mapper.readValue(fieldDefinitionString, typeRef);
+            template.setFieldDefinitionMap(fieldDefinitionMap);
+        } catch (IOException e) {
+            throw new ParsingException(StringUtil.format(Constants.PAYLOAD_PROPERTY_NOT_FOUND, new Object[]{}));
         }
-        template.setFieldItemMap(fieldItemMap);
+
         return template;
     }
 

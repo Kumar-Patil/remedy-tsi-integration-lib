@@ -6,6 +6,7 @@ import java.text.MessageFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.bmc.truesight.saas.remedy.integration.beans.InvalidEvent;
 import com.bmc.truesight.saas.remedy.integration.beans.TSIEvent;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -43,7 +44,7 @@ public class StringUtil {
         return true;
     }
 
-    public static boolean isObjectJsonSizeAllowed(TSIEvent event) {
+    public static boolean isObjectJsonSizeAllowed(TSIEvent event, InvalidEvent invalidEvent) {
         boolean isAllowed = true;
         if (event != null) {
             ObjectMapper mapper = new ObjectMapper();
@@ -53,11 +54,25 @@ public class StringUtil {
                 final byte[] utf8Bytes = eventJson.getBytes("UTF-8");
                 if (utf8Bytes.length >= Constants.MAX_EVENT_SIZE_ALLOWED_BYTES) {
                     isAllowed = false;
+                    invalidEvent.setInvalidEvent(event);
+                    String keyWithMaxSize = null;
+                    long maxSize = -1l;
+                    for (String key : event.getProperties().keySet()) {
+                        String value = event.getProperties().get(key);
+                        byte[] valueBytes = value.getBytes("UTF-8");
+                        if (valueBytes.length > maxSize) {
+                            maxSize = valueBytes.length;
+                            keyWithMaxSize = key;
+                        }
+                    }
+                    invalidEvent.setEventSize(utf8Bytes.length);
+                    invalidEvent.setMaxSizePropertyName(keyWithMaxSize);
+                    invalidEvent.setPropertySize(maxSize);
                 }
             } catch (JsonProcessingException e) {
-                log.error("Event to json conversion has some exception, {}", new Object[]{e.getMessage()});
+                log.error("Event to json conversion has some exception, {}", e.getMessage());
             } catch (UnsupportedEncodingException e) {
-                log.error("Event to json conversion has some problem in encoding, {}", new Object[]{e.getMessage()});
+                log.error("Event to json conversion has some problem in encoding, {}", e.getMessage());
             }
         }
         return isAllowed;

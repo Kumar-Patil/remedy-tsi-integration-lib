@@ -13,7 +13,7 @@ public class Template {
 
     private Configuration config;
     private TSIEvent eventDefinition;
-    private Map<String, FieldItem> FieldItemMap;
+    private Map<String, FieldItem> fieldDefinitionMap;
 
     public Configuration getConfig() {
         return config;
@@ -31,11 +31,12 @@ public class Template {
         this.eventDefinition = eventDefinition;
     }
 
-    public Map<String, FieldItem> getFieldItemMap() {
-        return FieldItemMap;
+    public Map<String, FieldItem> getFieldDefinitionMap() {
+        return fieldDefinitionMap;
     }
 
-    public void setFieldItemMap(Map<String, FieldItem> fieldItemMap) {
-        FieldItemMap = fieldItemMap;
+    public void setFieldDefinitionMap(Map<String, FieldItem> fieldDefinitionMap) {
+        this.fieldDefinitionMap = fieldDefinitionMap;
     }
+
 }

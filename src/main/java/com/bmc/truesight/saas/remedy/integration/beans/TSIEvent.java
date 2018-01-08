@@ -16,7 +16,7 @@ public class TSIEvent {
     private String createdAt;
     private String eventClass;
     private EventSource source;
-    private EventSource sender;
+    //private EventSource sender;
 
     public TSIEvent(TSIEvent payload) {
         this.setTitle(payload.getTitle());
@@ -24,7 +24,7 @@ public class TSIEvent {
         this.setEventClass(payload.getEventClass());
         this.setCreatedAt(payload.getCreatedAt());
         this.setProperties(new HashMap<String, String>(payload.getProperties()));
-        this.setSender(new EventSource(payload.getSender()));
+        //this.setSender(new EventSource(payload.getSender()));
         this.setSource(new EventSource(payload.getSource()));
         this.setSeverity(payload.getSeverity());
         this.setStatus(payload.getStatus());
@@ -82,14 +82,13 @@ public class TSIEvent {
         this.source = source;
     }
 
-    public EventSource getSender() {
+    /*public EventSource getSender() {
         return sender;
     }
 
     public void setSender(EventSource sender) {
         this.sender = sender;
-    }
-
+    }*/
     public Map<String, String> getProperties() {
         return properties;
     }
@@ -135,8 +134,8 @@ public class TSIEvent {
         builder.append(eventClass);
         builder.append(", \"source\":");
         builder.append(source);
-        builder.append(", \"sender\":");
-        builder.append(sender);
+        //builder.append(", \"sender\":");
+        // builder.append(sender);
         builder.append("}");
         return builder.toString();
     }
