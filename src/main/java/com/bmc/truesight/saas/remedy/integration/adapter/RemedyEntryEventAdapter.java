@@ -70,10 +70,6 @@ public class RemedyEntryEventAdapter {
         source.setType(getValueFromEntry(template, entry, source.getType()));
         source.setRef(getValueFromEntry(template, entry, source.getRef()));
 
-        /*EventSource sender = event.getSender();
-        sender.setName(getValueFromEntry(template, entry, sender.getName()));
-        sender.setType(getValueFromEntry(template, entry, sender.getType()));
-        sender.setRef(getValueFromEntry(template, entry, sender.getRef()));*/
         return event;
 
     }
@@ -109,7 +105,7 @@ public class RemedyEntryEventAdapter {
                 } else if (field instanceof DateTimeField || field instanceof TimeOnlyField) {
                     Timestamp dateTimeTS = (Timestamp) value.getValue();
                     if (dateTimeTS != null) {
-                        return Long.toString(dateTimeTS.getValue());
+                        return Long.toString(dateTimeTS.toDate().getTime());
                     } else {
                         return Constants.NONE_VALUE;
                     }

@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.bmc.truesight.saas</groupId>
     <artifactId>remedy-tsi-integration-lib</artifactId>
-    <version>0.1.7</version>
+    <version>0.1.8</version>
     <name>remedy-tsi-integration-lib</name>
     <description>Library for integration of Remedy Incidents and Change tickets into Truesight Intelligence as Events</description>
 
@@ -49,8 +49,6 @@
             <groupId>com.bmc.arsys.api</groupId>
             <artifactId>api80_build002</artifactId>
             <version>${arsys.version}</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/lib/api80_build002-8.0.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>commons-lang</groupId>

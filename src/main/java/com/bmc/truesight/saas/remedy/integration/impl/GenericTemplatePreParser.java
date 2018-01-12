@@ -100,11 +100,16 @@ public class GenericTemplatePreParser implements TemplatePreParser {
                     config.setTsiApiToken(tsiKeyNode.asText());
                 }
 
-                //Setting Config chunk size as constant
                 JsonNode chunkNode = configuration.get(Constants.CONFIG_CHUNKSIZE_NODE_NAME);
                 if (chunkNode != null) {
                     Integer chunk = Integer.parseInt(chunkNode.asText());
                     config.setChunkSize(chunk);
+                }
+                
+                JsonNode retryChunkNode = configuration.get(Constants.CONFIG_RETRYCHUNKSIZE_NODE_NAME);
+                if (retryChunkNode != null) {
+                    Integer chunk = Integer.parseInt(retryChunkNode.asText());
+                    config.setRetryChunkSize(chunk);
                 }
 
                 JsonNode threadsNode = configuration.get(Constants.CONFIG_THREADS_NODE_NAME);

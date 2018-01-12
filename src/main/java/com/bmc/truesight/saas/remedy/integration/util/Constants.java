@@ -15,6 +15,7 @@ public interface Constants {
     String CONFIG_TSIENDPOINT_NODE_NAME = "tsiEventEndpoint";
     String CONFIG_TSITOKEN_NODE_NAME = "tsiApiToken";
     String CONFIG_CHUNKSIZE_NODE_NAME = "chunkSize";
+    String CONFIG_RETRYCHUNKSIZE_NODE_NAME = "retryChunkSize";;
     String CONFIG_THREADS_NODE_NAME = "threadCount";
     String CONFIG_CONDFIELDS_NODE_NAME = "conditionFields";
     String CONFIG_CONDSTATUSFIELDS_NODE_NAME = "queryStatusList";
@@ -26,7 +27,7 @@ public interface Constants {
     String PROPERTY_INCIDENT_NO = "Incident_Number";
     String PROPERTY_CHANGE_ID = "Change_ID";
     String PROPERTY_LAST_MODIFIED_DATE = "Last_Modified_Date";
-    String NONE_VALUE = "None";
+    String NONE_VALUE = "";
     String INCIDENT_TEMPLATE_PATH = File.separator + "incidentTemplate.json";
     String CHANGE_TEMPLATE_PATH = File.separator + "changeTemplate.json";
     String REGKEY_FILE_NAME = "RegKey.reg";

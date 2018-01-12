@@ -152,6 +152,9 @@ public class GenericTemplateParser implements TemplateParser {
         if (config.getChunkSize() != null) {
             defaultConfig.setChunkSize(config.getChunkSize());
         }
+        if (config.getRetryChunkSize() != null) {
+            defaultConfig.setRetryChunkSize(config.getRetryChunkSize());
+        }
         if (config.getThreadCount() != null) {
             defaultConfig.setThreadCount(config.getThreadCount());
         }
