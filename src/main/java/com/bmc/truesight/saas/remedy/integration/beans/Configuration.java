@@ -21,6 +21,7 @@ public class Configuration {
     private String tsiEventEndpoint;
     private String tsiApiToken;
     private Integer chunkSize;
+    private Integer retryChunkSize;
     private Integer threadCount;
     private List<Integer> conditionFields;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss z")
@@ -142,5 +143,13 @@ public class Configuration {
     public void setThreadCount(Integer threadCount) {
         this.threadCount = threadCount;
     }
+
+	public Integer getRetryChunkSize() {
+		return retryChunkSize;
+	}
+
+	public void setRetryChunkSize(Integer retryChunkSize) {
+		this.retryChunkSize = retryChunkSize;
+	}
 
 }

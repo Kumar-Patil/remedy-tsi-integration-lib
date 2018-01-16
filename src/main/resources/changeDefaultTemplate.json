@@ -13,6 +13,7 @@
         "retryConfig": 2,
         "waitMsBeforeRetry": 5000,
         "chunkSize": 1000,
+        "retryChunkSize":100,
         "threadCount": 10
     },
     "eventDefinition": {

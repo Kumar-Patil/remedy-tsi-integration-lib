@@ -229,7 +229,7 @@ public class GenericRemedyReader implements RemedyReader {
             } catch (ARException e) {
                 if (retryCount < template.getConfig().getRetryConfig()) {
                     retryCount++;
-                    log.debug("Reading  {} tickets for {} entry ids  resulted into exception[{}], Re-trying for {} time", entryList.size(), ids.size(), retryCount);
+                    log.debug("Reading  {} tickets for {} entry ids  resulted into exception[{}], Re-trying for {} time", entryList.size(), ids.size(), e.getMessage(), retryCount);
                     try {
                         log.debug("Waiting for {} sec before trying again ......", (template.getConfig().getWaitMsBeforeRetry() / 1000));
                         Thread.sleep(template.getConfig().getWaitMsBeforeRetry());
@@ -239,7 +239,7 @@ public class GenericRemedyReader implements RemedyReader {
                     continue;
                 } else {
                     log.debug("Skipping the read process, Reading tickets Failed for {} entries even after retrying for {} times", ids.size(), retryCount);
-                    throw new RemedyReadFailedException(e.getMessage()+", Skipping the read process, Reading tickets Failed for  " + ids.size() + " entries even after retrying for " + retryCount + " times");
+                    throw new RemedyReadFailedException(e.getMessage()+", Reading tickets Failed for  " + ids.size() + " entries even after retrying for " + retryCount + " times");
                 }
             }
         }
